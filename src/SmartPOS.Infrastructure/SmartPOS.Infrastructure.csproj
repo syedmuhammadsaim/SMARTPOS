@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SmartPOS.Domain\SmartPOS.Domain.csproj" />
     <ProjectReference Include="..\SmartPOS.Application\SmartPOS.Application.csproj" />
   </ItemGroup>

@@ -1,7 +1,15 @@
+using Microsoft.AspNetCore.Identity;
+using SmartPOS.Infrastructure;
+using SmartPOS.Infrastructure.Data;
+using SmartPOS.Infrastructure.Identity;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Add Infrastructure & EF Core DbContext
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Add API Controllers & OpenAPI
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -13,29 +21,38 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapControllers();
 
-app.MapGet("/weatherforecast", () =>
+// Health Check / System status endpoint
+app.MapGet("/api/health", () => Results.Ok(new
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    Status = "Healthy",
+    System = "SMARTPOS Enterprise API",
+    Version = "2.0.0",
+    TimestampUtc = DateTime.UtcNow
+}));
+
+// Automatic database migration & default seeding in development
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<SmartPOSDbContext>();
+        var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+        await context.Database.EnsureCreatedAsync();
+        await DbInitializer.SeedSystemDefaultsAsync(context, roleManager, userManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
+}
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
