@@ -4,7 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartPOS.Application.Common.Interfaces;
 using SmartPOS.Application.Features.Auth.Interfaces;
+using SmartPOS.Application.Features.Communication;
 using SmartPOS.Application.Features.Customers;
+using SmartPOS.Application.Features.FBR;
+using SmartPOS.Application.Features.ImportExport;
 using SmartPOS.Application.Features.Inventory;
 using SmartPOS.Application.Features.POS.Interfaces;
 using SmartPOS.Application.Features.Products;
@@ -34,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IPurchaseService, PurchaseService>();
         services.AddScoped<IInventoryService, InventoryService>();
+        services.AddScoped<IFbrService, FbrService>();
+        services.AddScoped<IWhatsAppService, WhatsAppService>();
+        services.AddScoped<IImportService, ImportService>();
         services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
         services.AddDbContext<SmartPOSDbContext>((sp, options) =>

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartPOS.Application.Features.Communication;
 using SmartPOS.Application.Features.POS.DTOs;
 using SmartPOS.Application.Features.POS.Interfaces;
 
@@ -11,10 +12,12 @@ namespace SmartPOS.API.Controllers;
 public class POSController : ControllerBase
 {
     private readonly IPOSService _posService;
+    private readonly IWhatsAppService _whatsAppService;
 
-    public POSController(IPOSService posService)
+    public POSController(IPOSService posService, IWhatsAppService whatsAppService)
     {
         _posService = posService;
+        _whatsAppService = whatsAppService;
     }
 
     [HttpPost("orders")]
@@ -62,6 +65,16 @@ public class POSController : ControllerBase
         var operatorId = GetCurrentUserId();
         var report = await _posService.CloseSessionAndGenerateZReportAsync(sessionId, actualCashCounted, operatorId);
         return Ok(report);
+    }
+
+    [HttpPost("orders/{id:guid}/send-whatsapp")]
+    public async Task<IActionResult> SendWhatsAppReceipt(Guid id, [FromBody] WhatsAppReceiptRequest request, CancellationToken ct)
+    {
+        var result = await _whatsAppService.SendDigitalReceiptAsync(request, ct);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
     }
 
     private Guid GetCurrentUserId()

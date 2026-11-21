@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartPOS.Application.Features.ImportExport;
 using SmartPOS.Application.Features.Products;
 using SmartPOS.Application.Features.Products.DTOs;
 
@@ -10,10 +11,12 @@ namespace SmartPOS.API.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly IImportService _importService;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, IImportService importService)
     {
         _productService = productService;
+        _importService = importService;
     }
 
     [HttpGet("search")]
@@ -56,5 +59,17 @@ public class ProductsController : ControllerBase
     {
         var batches = await _productService.GetProductBatchesAsync(id, warehouseId, ct);
         return Ok(batches);
+    }
+
+    [HttpPost("import-csv")]
+    [Authorize]
+    public async Task<ActionResult<ImportResultDto>> ImportFromCsv(IFormFile file, [FromQuery] Guid warehouseId, CancellationToken ct)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("CSV file is required.");
+
+        using var stream = file.OpenReadStream();
+        var result = await _importService.ImportProductsFromCsvAsync(stream, warehouseId, ct);
+        return Ok(result);
     }
 }
