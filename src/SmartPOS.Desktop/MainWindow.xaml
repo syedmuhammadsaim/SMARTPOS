@@ -114,12 +114,36 @@
                     </Border>
                 </StackPanel>
 
-                <!-- Controls & Language Toggle -->
+                <!-- Controls, Hardware & Offline Indicators -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="{Binding PendingOfflineOrdersCount, StringFormat='Offline: {0} 🔄'}" 
+                            Command="{Binding SyncOfflineCommand}" 
+                            Background="#D97706" 
+                            Foreground="#FFFFFF"
+                            FontSize="12"
+                            Margin="4,0"
+                            Padding="10,6"
+                            ToolTip="Click to synchronize offline transactions with the cloud server" />
+
+                    <Button Content="📺 Display" 
+                            Command="{Binding OpenCustomerDisplayCommand}" 
+                            Style="{StaticResource ActionButton}" 
+                            Margin="4,0"
+                            Padding="10,6"
+                            ToolTip="Open Customer Display Screen on 2nd monitor" />
+
+                    <Button Content="🔍 Kiosk" 
+                            Command="{Binding OpenPriceCheckerCommand}" 
+                            Style="{StaticResource ActionButton}" 
+                            Margin="4,0"
+                            Padding="10,6"
+                            ToolTip="Open Price Checker Kiosk mode" />
+
                     <Button Content="{Binding IsUrdu, Converter={x:Null}, FallbackValue='اردو / EN'}" 
                             Command="{Binding ToggleLanguageCommand}" 
                             Style="{StaticResource ActionButton}" 
-                            Padding="12,6" />
+                            Margin="4,0"
+                            Padding="10,6" />
                 </StackPanel>
             </Grid>
         </Border>

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -24,6 +25,7 @@
     <ProjectReference Include="..\..\src\SmartPOS.Application\SmartPOS.Application.csproj" />
     <ProjectReference Include="..\..\src\SmartPOS.Infrastructure\SmartPOS.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\SmartPOS.API\SmartPOS.API.csproj" />
+    <ProjectReference Include="..\..\src\SmartPOS.Desktop\SmartPOS.Desktop.csproj" />
   </ItemGroup>
 
 </Project>

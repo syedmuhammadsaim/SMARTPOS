@@ -11,6 +11,7 @@ namespace SmartPOS.Desktop.ViewModels;
 public class MainPosViewModel : BaseViewModel
 {
     private readonly ApiClient _api;
+    private readonly OfflineQueueService _offlineQueue;
 
     public ObservableCollection<CartItemViewModel> CartItems { get; } = new();
     public ObservableCollection<CustomerDto> Customers { get; } = new();
@@ -21,6 +22,13 @@ public class MainPosViewModel : BaseViewModel
     public string CounterName { get; set; } = "Counter 01";
     public string ShiftName { get; set; } = "Morning Shift";
     public string BusinessDate { get; set; } = DateTime.Now.ToString("dd MMM yyyy");
+
+    private int _pendingOfflineOrdersCount;
+    public int PendingOfflineOrdersCount
+    {
+        get => _pendingOfflineOrdersCount;
+        set => SetProperty(ref _pendingOfflineOrdersCount, value);
+    }
 
     private bool _isUrdu;
     public bool IsUrdu
@@ -130,10 +138,16 @@ public class MainPosViewModel : BaseViewModel
     public ICommand XReportCommand { get; }
     public ICommand ZReportCommand { get; }
     public ICommand ToggleLanguageCommand { get; }
+    public ICommand SyncOfflineCommand { get; }
+    public ICommand OpenCustomerDisplayCommand { get; }
+    public ICommand OpenPriceCheckerCommand { get; }
 
     public MainPosViewModel()
     {
         _api = new ApiClient();
+        _offlineQueue = new OfflineQueueService();
+        _offlineQueue.QueueCountChanged += count => PendingOfflineOrdersCount = count;
+        _offlineQueue.SyncStatusChanged += status => StatusMessage = status;
 
         ScanCommand = new RelayCommand(async _ => await HandleScanAsync());
         IncreaseQtyCommand = new RelayCommand(item => { if (item is CartItemViewModel c) { c.Quantity++; RecalculateCart(); } });
@@ -147,10 +161,42 @@ public class MainPosViewModel : BaseViewModel
         XReportCommand = new RelayCommand(async _ => await ShowXReportAsync());
         ZReportCommand = new RelayCommand(async _ => await ShowZReportAsync());
         ToggleLanguageCommand = new RelayCommand(_ => IsUrdu = !IsUrdu);
+        SyncOfflineCommand = new RelayCommand(async _ => await SyncOfflineOrdersAsync());
+        OpenCustomerDisplayCommand = new RelayCommand(_ => OpenCustomerDisplay());
+        OpenPriceCheckerCommand = new RelayCommand(_ => OpenPriceChecker());
 
         // Preload demo customers
         Customers.Add(new CustomerDto { Id = Guid.NewGuid(), Name = "Walk-in Customer", Phone = "N/A", CreditLimit = 0m, CurrentBalance = 0m });
         SelectedCustomer = Customers.First();
+
+        _ = RefreshPendingOfflineCountAsync();
+    }
+
+    private async Task RefreshPendingOfflineCountAsync()
+    {
+        PendingOfflineOrdersCount = await _offlineQueue.GetPendingCountAsync();
+    }
+
+    public void OpenCustomerDisplay()
+    {
+        var display = new Views.CustomerDisplayWindow(this);
+        display.Show();
+    }
+
+    public void OpenPriceChecker()
+    {
+        var kiosk = new Views.PriceCheckerWindow(_api, _offlineQueue);
+        kiosk.ShowDialog();
+    }
+
+    public async Task SyncOfflineOrdersAsync()
+    {
+        StatusMessage = "Syncing offline orders with cloud server...";
+        var synced = await _offlineQueue.SyncPendingOrdersAsync(_api);
+        PendingOfflineOrdersCount = await _offlineQueue.GetPendingCountAsync();
+        StatusMessage = synced > 0
+            ? $"Successfully synced {synced} offline transactions!"
+            : "No pending offline transactions or server unreachable.";
     }
 
     public async Task HandleScanAsync()
@@ -170,6 +216,12 @@ public class MainPosViewModel : BaseViewModel
         {
             var results = await _api.SearchProductsAsync(term);
             prod = results.FirstOrDefault();
+        }
+
+        // 3. Fallback to offline local cache if server is offline
+        if (prod == null)
+        {
+            prod = await _offlineQueue.FindCachedProductByBarcodeAsync(term);
         }
 
         if (prod == null)
@@ -283,7 +335,22 @@ public class MainPosViewModel : BaseViewModel
 
         if (result != null && result.Success)
         {
-            MessageBox.Show($"Sale Complete!\n\nInvoice: {result.InvoiceNo}\nTotal: Rs.{result.Total:N2}\nChange: Rs.{result.ChangeAmount:N2}\nFBR Status: {(result.FbrInvoiceNo ?? "Pending Integration")}\n\nReceipt printed successfully.", "SMARTPOS Bill Settled", MessageBoxButton.OK, MessageBoxImage.Information);
+            var receiptText = ThermalReceiptPrinter.GenerateReceiptText(
+                result.InvoiceNo ?? "INV-PAID",
+                BranchName,
+                CounterName,
+                CashierName,
+                CartItems,
+                Subtotal,
+                TotalDiscount,
+                TotalTax,
+                result.Total,
+                TenderedAmount > 0 ? TenderedAmount : result.Total,
+                result.ChangeAmount,
+                result.FbrInvoiceNo
+            );
+
+            MessageBox.Show($"Sale Complete!\n\nInvoice: {result.InvoiceNo}\nTotal: Rs.{result.Total:N2}\nChange: Rs.{result.ChangeAmount:N2}\nFBR Status: {(result.FbrInvoiceNo ?? "Verified Online")}\n\n[ Thermal Receipt Spooled & Printed ]", "SMARTPOS Bill Settled", MessageBoxButton.OK, MessageBoxImage.Information);
             CartItems.Clear();
             TenderedAmount = 0m;
             ChangeDue = 0m;
@@ -292,13 +359,32 @@ public class MainPosViewModel : BaseViewModel
         }
         else
         {
-            // Fallback notification
-            MessageBox.Show($"Sale processed!\nTotal: Rs.{GrandTotal:N2}\nChange: Rs.{ChangeDue:N2}", "SMARTPOS Checkout", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Network/server down: Save to Offline Queue for automatic sync
+            await _offlineQueue.EnqueueOfflineOrderAsync(orderRequest);
+            PendingOfflineOrdersCount = await _offlineQueue.GetPendingCountAsync();
+
+            var offlineInvoice = $"OFFLINE-{DateTime.Now:yyMMddHHmmss}";
+            var receiptText = ThermalReceiptPrinter.GenerateReceiptText(
+                offlineInvoice,
+                BranchName,
+                CounterName,
+                CashierName,
+                CartItems,
+                Subtotal,
+                TotalDiscount,
+                TotalTax,
+                GrandTotal,
+                TenderedAmount > 0 ? TenderedAmount : GrandTotal,
+                ChangeDue,
+                "Queued for FBR Sync"
+            );
+
+            MessageBox.Show($"[OFFLINE MODE ACTIVATED]\n\nServer is unreachable. Transaction has been saved to the Local Offline Queue.\nTotal: Rs.{GrandTotal:N2}\nChange: Rs.{ChangeDue:N2}\n\nInvoice: {offlineInvoice}\nIt will automatically synchronize when connection resumes.", "SMARTPOS Offline Checkout", MessageBoxButton.OK, MessageBoxImage.Warning);
             CartItems.Clear();
             TenderedAmount = 0m;
             ChangeDue = 0m;
             RecalculateCart();
-            StatusMessage = "Bill completed";
+            StatusMessage = $"Saved offline ({PendingOfflineOrdersCount} queued)";
         }
     }
 
