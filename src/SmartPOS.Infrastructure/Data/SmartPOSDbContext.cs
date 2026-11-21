@@ -218,6 +218,31 @@ public class SmartPOSDbContext : IdentityDbContext<ApplicationUser, ApplicationR
 
         builder.Entity<StockBalance>()
             .HasIndex(s => new { s.ProductId, s.VariantId, s.WarehouseId, s.BatchId });
+
+        // Prevent multiple cascade paths on SQL Server
+        builder.Entity<ProductBundleItem>()
+            .HasOne(b => b.ComponentProduct)
+            .WithMany()
+            .HasForeignKey(b => b.ComponentProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ProductBundleItem>()
+            .HasOne(b => b.BundleProduct)
+            .WithMany()
+            .HasForeignKey(b => b.BundleProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<StockTransfer>()
+            .HasOne(m => m.ToWarehouse)
+            .WithMany()
+            .HasForeignKey(m => m.ToWarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<StockTransfer>()
+            .HasOne(m => m.FromWarehouse)
+            .WithMany()
+            .HasForeignKey(m => m.FromWarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private void ConfigureTenantFilter<TEntity>(ModelBuilder builder) where TEntity : class, ITenantScoped

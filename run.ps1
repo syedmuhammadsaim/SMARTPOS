@@ -7,20 +7,36 @@ Write-Host "       SMARTPOS v1.0 - All-In-One Enterprise Launcher   " -Foregroun
 Write-Host "========================================================" -ForegroundColor Cyan
 Write-Host ""
 
-Write-Host "[1/3] Starting SmartPOS Backend Web API (Port 5000)..." -ForegroundColor Green
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "dotnet run --project src\SmartPOS.API\SmartPOS.API.csproj"
+Write-Host "[1/3] Compiling solution projects..." -ForegroundColor Green
+dotnet build SmartPOS.slnx --verbosity quiet
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[ERROR] Build failed! Please review errors above." -ForegroundColor Red
+    pause
+    exit
+}
+Write-Host "[OK] Solution compiled successfully!" -ForegroundColor Green
+Write-Host ""
 
-Write-Host "[2/3] Starting SmartPOS Executive Web Portal (Port 5084)..." -ForegroundColor Green
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "dotnet run --project src\SmartPOS.Web\SmartPOS.Web.csproj"
+Write-Host "[2/3] Starting SmartPOS Backend API & Web Portal..." -ForegroundColor Green
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "dotnet run --no-build --project src\SmartPOS.API\SmartPOS.API.csproj"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "dotnet run --no-build --project src\SmartPOS.Web\SmartPOS.Web.csproj"
 
-Write-Host "Waiting 4 seconds for web services to initialize..." -ForegroundColor DarkGray
-Start-Sleep -Seconds 4
+Write-Host "Waiting for Web Portal to become active on port 5084..." -ForegroundColor DarkGray
+while ($true) {
+    try {
+        $client = New-Object System.Net.Sockets.TcpClient('127.0.0.1', 5084)
+        $client.Close()
+        break
+    } catch {
+        Start-Sleep -Milliseconds 800
+    }
+}
 
-Write-Host "Opening Executive Dashboard in Chrome / Default Browser..." -ForegroundColor Cyan
+Write-Host "[OK] Web Portal is LIVE! Opening Chrome / Default Browser..." -ForegroundColor Cyan
 Start-Process "http://localhost:5084"
 
 Write-Host "[3/3] Starting SmartPOS Cashier Desktop Terminal (WPF)..." -ForegroundColor Green
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "dotnet run --project src\SmartPOS.Desktop\SmartPOS.Desktop.csproj"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "dotnet run --no-build --project src\SmartPOS.Desktop\SmartPOS.Desktop.csproj"
 
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Cyan
