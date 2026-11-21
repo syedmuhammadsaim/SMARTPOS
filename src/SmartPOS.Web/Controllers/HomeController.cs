@@ -41,6 +41,26 @@ public class HomeController : Controller
         var totalStockValuation = (await _inventoryService.GetStockBalancesAsync(null, false, ct))
             .Sum(s => s.TotalValuation);
 
+        // 7-Day sales trend for Chart.js
+        var sevenDaysAgo = today.AddDays(-6);
+        var last7DaysOrders = await _context.POSOrders
+            .AsNoTracking()
+            .Where(o => o.BusinessDate >= sevenDaysAgo)
+            .ToListAsync(ct);
+
+        var chartDays = new List<string>();
+        var chartSales = new List<decimal>();
+
+        for (int i = 0; i < 7; i++)
+        {
+            var day = sevenDaysAgo.AddDays(i);
+            chartDays.Add(day.ToString("dd MMM"));
+            chartSales.Add(last7DaysOrders.Where(o => o.BusinessDate.Date == day.Date).Sum(o => o.Total));
+        }
+
+        ViewBag.ChartDays = chartDays;
+        ViewBag.ChartSales = chartSales;
+
         var vm = new DashboardViewModel
         {
             TodaySales = todaySales,

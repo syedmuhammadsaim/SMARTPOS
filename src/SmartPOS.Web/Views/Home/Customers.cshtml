@@ -1,0 +1,123 @@
+@model List<SmartPOS.Application.Features.Customers.DTOs.CustomerDto>
+@{
+    ViewData["Title"] = "Customer Directory & Credit Accounts";
+    var totalCredit = Model.Sum(c => c.CurrentBalance);
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h2 class="fw-bold mb-0 text-white">Customer Accounts & Udhaar Directory</h2>
+            <span class="badge-pill-modern badge-indigo">
+                <i class="bi bi-people-fill"></i> @Model.Count Registered Customers
+            </span>
+        </div>
+        <p class="text-secondary mb-0">Customer credit profiles, limits, CNIC/NTN records, and outstanding ledgers</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="CustomerAgeing" class="btn btn-modern-primary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-hourglass-split"></i> Ageing Schedule
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-4">
+        <div class="glass-card">
+            <div class="text-secondary text-uppercase small fw-bold mb-1">Total Outstanding Credit</div>
+            <div class="h3 fw-bold text-amber mono mb-0">Rs. @totalCredit.ToString("N2")</div>
+            <div class="text-secondary small mt-1">Across all registered credit customers</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="glass-card">
+            <div class="text-secondary text-uppercase small fw-bold mb-1">Credit Permitted Accounts</div>
+            <div class="h3 fw-bold text-emerald mono mb-0">@Model.Count(c => c.IsCreditAllowed)</div>
+            <div class="text-secondary small mt-1">Customers authorized for credit billing</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="glass-card">
+            <div class="text-secondary text-uppercase small fw-bold mb-1">Active Accounts</div>
+            <div class="h3 fw-bold text-white mono mb-0">@Model.Count(c => c.IsActive)</div>
+            <div class="text-secondary small mt-1">Enabled for POS billing and receipt lookups</div>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="glass-card-header">
+        <h5 class="fw-bold mb-0 text-white">Customer Records</h5>
+        <span class="badge-pill-modern badge-indigo">Full Directory</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Customer Name</th>
+                    <th>Phone / Email</th>
+                    <th>CNIC / NTN</th>
+                    <th class="text-end">Credit Limit</th>
+                    <th class="text-end">Current Udhaar</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary py-5">
+                            <i class="bi bi-people fs-3 d-block mb-2"></i>
+                            No customers registered yet.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var c in Model)
+                    {
+                        <tr>
+                            <td><span class="badge-pill-modern badge-indigo mono">@c.CustomerCode</span></td>
+                            <td>
+                                <div class="fw-semibold text-white">@c.Name</div>
+                                @if (!string.IsNullOrEmpty(c.CustomerGroupName))
+                                {
+                                    <span class="badge-pill-modern badge-cyan py-0 px-2 mt-1">@c.CustomerGroupName</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="mono small text-secondary">@(c.Phone ?? "N/A")</div>
+                                @if (!string.IsNullOrEmpty(c.Email))
+                                {
+                                    <div class="small text-muted">@c.Email</div>
+                                }
+                            </td>
+                            <td class="mono small text-secondary">
+                                <div>@(c.CNIC ?? "—")</div>
+                                @if (!string.IsNullOrEmpty(c.NTN))
+                                {
+                                    <div class="text-muted">NTN: @c.NTN</div>
+                                }
+                            </td>
+                            <td class="text-end mono">Rs. @c.CreditLimit.ToString("N2")</td>
+                            <td class="text-end mono fw-bold @(c.CurrentBalance > 0 ? "text-amber" : "text-emerald")">
+                                Rs. @c.CurrentBalance.ToString("N2")
+                            </td>
+                            <td class="text-center">
+                                @if (c.IsActive)
+                                {
+                                    <span class="badge-pill-modern badge-emerald">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-pill-modern badge-rose">Inactive</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -7,15 +7,29 @@
     var valuation = ViewBag.Valuation as SmartPOS.Application.Features.Reports.DTOs.InventoryValuationReportDto;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Page Header & Filter Form -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><i class="fa-solid fa-chart-pie text-info me-2"></i> Executive Reports &amp; Analytics</h2>
-        <p class="text-secondary mb-0">Financial Performance, Profit &amp; Loss, and Cashier Leaderboard</p>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h2 class="fw-bold mb-0 text-white">Executive Financials & P&L</h2>
+            <span class="badge-pill-modern badge-indigo">
+                <i class="bi bi-bar-chart-fill"></i> Real-time Ledger
+            </span>
+        </div>
+        <p class="text-secondary mb-0">Perpetual COGS, gross margins, operating expenses, and cashier leaderboards</p>
     </div>
-    <form method="get" class="d-flex gap-2">
-        <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control form-control-sm bg-dark text-light border-secondary" />
-        <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control form-control-sm bg-dark text-light border-secondary" />
-        <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+    <form method="get" class="d-flex flex-wrap align-items-center gap-2">
+        <div class="input-group input-group-sm" style="width: auto;">
+            <span class="input-group-text bg-dark text-secondary border-secondary">From</span>
+            <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control form-control-sm bg-dark text-white border-secondary" />
+        </div>
+        <div class="input-group input-group-sm" style="width: auto;">
+            <span class="input-group-text bg-dark text-secondary border-secondary">To</span>
+            <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control form-control-sm bg-dark text-white border-secondary" />
+        </div>
+        <button type="submit" class="btn btn-modern-primary btn-sm d-inline-flex align-items-center gap-1">
+            <i class="bi bi-filter"></i> Apply Filter
+        </button>
     </form>
 </div>
 
@@ -23,32 +37,60 @@
 @if (pnl != null)
 {
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="metric-card border-start border-4 border-primary">
-                <div class="text-secondary small fw-semibold">GROSS REVENUE</div>
-                <div class="metric-value text-primary">Rs. @pnl.GrossSalesRevenue.ToString("N0")</div>
-                <div class="text-secondary small">Total Invoices: @pnl.TotalInvoicesCount</div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="glass-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-secondary text-uppercase small fw-bold">Gross Revenue</span>
+                    <div class="kpi-icon-box" style="background: rgba(99, 102, 241, 0.15); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.3);">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold text-white mono mb-1">Rs. @pnl.GrossSalesRevenue.ToString("N0")</div>
+                <div class="text-secondary small">
+                    <span class="badge-pill-modern badge-indigo py-0 px-2">@pnl.TotalInvoicesCount Invoices</span>
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="metric-card border-start border-4 border-warning">
-                <div class="text-secondary small fw-semibold">DISCOUNTS &amp; RETURNS</div>
-                <div class="metric-value text-warning">Rs. @((pnl.TotalDiscounts + pnl.TotalReturnsRefunded).ToString("N0"))</div>
-                <div class="text-secondary small">Discounts: Rs. @pnl.TotalDiscounts.ToString("N0") | Returns: Rs. @pnl.TotalReturnsRefunded.ToString("N0")</div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="glass-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-secondary text-uppercase small fw-bold">Discounts & Returns</span>
+                    <div class="kpi-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3);">
+                        <i class="bi bi-arrow-return-left"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold text-amber mono mb-1">Rs. @((pnl.TotalDiscounts + pnl.TotalReturnsRefunded).ToString("N0"))</div>
+                <div class="text-secondary small">
+                    Disc: Rs. @pnl.TotalDiscounts.ToString("N0") | Ret: Rs. @pnl.TotalReturnsRefunded.ToString("N0")
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="metric-card border-start border-4 border-info">
-                <div class="text-secondary small fw-semibold">GROSS PROFIT (MARGIN)</div>
-                <div class="metric-value text-info">Rs. @pnl.GrossProfit.ToString("N0")</div>
-                <div class="text-secondary small">Gross Margin: <strong class="text-light">@pnl.GrossProfitMarginPercent%</strong></div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="glass-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-secondary text-uppercase small fw-bold">Gross Profit (Margin)</span>
+                    <div class="kpi-icon-box" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4; border: 1px solid rgba(6, 182, 212, 0.3);">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold text-cyan mono mb-1">Rs. @pnl.GrossProfit.ToString("N0")</div>
+                <div class="text-secondary small">
+                    Margin: <span class="badge-pill-modern badge-cyan py-0 px-2">@pnl.GrossProfitMarginPercent%</span>
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="metric-card border-start border-4 border-success">
-                <div class="text-secondary small fw-semibold">NET PROFIT (AFTER EXPENSES)</div>
-                <div class="metric-value text-success">Rs. @pnl.NetProfit.ToString("N0")</div>
-                <div class="text-secondary small">Operating Expenses: Rs. @pnl.TotalOperatingExpenses.ToString("N0")</div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="glass-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="text-secondary text-uppercase small fw-bold">Net Profit</span>
+                    <div class="kpi-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3);">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold text-emerald mono mb-1">Rs. @pnl.NetProfit.ToString("N0")</div>
+                <div class="text-secondary small">
+                    OpEx: Rs. @pnl.TotalOperatingExpenses.ToString("N0")
+                </div>
             </div>
         </div>
     </div>
@@ -56,118 +98,132 @@
 
 <div class="row g-4 mb-4">
     <!-- Category Sales Breakdown -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="fa-solid fa-layer-group text-primary me-2"></i> Sales by Category</span>
-                <span class="badge bg-secondary">@categories.Count Categories</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Category</th>
-                                <th class="text-end">Revenue</th>
-                                <th class="text-end">Gross Profit</th>
-                                <th class="text-end">Share</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (categories.Count == 0)
-                            {
-                                <tr><td colspan="4" class="text-center text-secondary py-3">No sales recorded in selected date range.</td></tr>
-                            }
-                            @foreach (var cat in categories)
-                            {
-                                <tr>
-                                    <td class="fw-semibold">@cat.CategoryName</td>
-                                    <td class="text-end text-light">Rs. @cat.TotalRevenue.ToString("N2")</td>
-                                    <td class="text-end text-success">Rs. @cat.GrossProfit.ToString("N2")</td>
-                                    <td class="text-end"><span class="badge bg-info text-dark">@cat.RevenueSharePercent%</span></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+    <div class="col-lg-6">
+        <div class="glass-card h-100">
+            <div class="glass-card-header">
+                <div>
+                    <h5 class="fw-bold mb-1 text-white">
+                        <i class="bi bi-pie-chart text-indigo me-2"></i>Sales by Category
+                    </h5>
+                    <p class="text-secondary small mb-0">Departmental contribution to total turnover</p>
                 </div>
+                <span class="badge-pill-modern badge-indigo">@categories.Count Categories</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th class="text-end">Revenue</th>
+                            <th class="text-end">Gross Profit</th>
+                            <th class="text-end">Share</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (categories.Count == 0)
+                        {
+                            <tr><td colspan="4" class="text-center text-secondary py-4">No category sales recorded in this date range.</td></tr>
+                        }
+                        @foreach (var cat in categories)
+                        {
+                            <tr>
+                                <td class="fw-semibold text-white">@cat.CategoryName</td>
+                                <td class="text-end mono">Rs. @cat.TotalRevenue.ToString("N2")</td>
+                                <td class="text-end text-emerald mono">Rs. @cat.GrossProfit.ToString("N2")</td>
+                                <td class="text-end"><span class="badge-pill-modern badge-cyan">@cat.RevenueSharePercent%</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- Payment Methods Breakdown -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="fa-solid fa-credit-card text-success me-2"></i> Payment Methods Breakdown</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Method</th>
-                                <th class="text-center">Transactions</th>
-                                <th class="text-end">Total Amount</th>
-                                <th class="text-end">Percentage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (paymentMethods.Count == 0)
-                            {
-                                <tr><td colspan="4" class="text-center text-secondary py-3">No payments recorded.</td></tr>
-                            }
-                            @foreach (var pm in paymentMethods)
-                            {
-                                <tr>
-                                    <td class="fw-semibold">@pm.PaymentMethod</td>
-                                    <td class="text-center text-secondary">@pm.TransactionCount</td>
-                                    <td class="text-end text-light">Rs. @pm.TotalAmount.ToString("N2")</td>
-                                    <td class="text-end"><span class="badge bg-success">@pm.PercentageOfTotal%</span></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+    <div class="col-lg-6">
+        <div class="glass-card h-100">
+            <div class="glass-card-header">
+                <div>
+                    <h5 class="fw-bold mb-1 text-white">
+                        <i class="bi bi-credit-card-2-front text-emerald me-2"></i>Tender / Payment Mix
+                    </h5>
+                    <p class="text-secondary small mb-0">Cash vs 1Link / PayPak / Cards vs Customer Udhaar</p>
                 </div>
+                <span class="badge-pill-modern badge-emerald">Payment Gateways</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th class="text-center">Transactions</th>
+                            <th class="text-end">Total Amount</th>
+                            <th class="text-end">Share</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (paymentMethods.Count == 0)
+                        {
+                            <tr><td colspan="4" class="text-center text-secondary py-4">No payments recorded in this period.</td></tr>
+                        }
+                        @foreach (var pm in paymentMethods)
+                        {
+                            <tr>
+                                <td class="fw-semibold text-white">@pm.PaymentMethod</td>
+                                <td class="text-center mono text-secondary">@pm.TransactionCount</td>
+                                <td class="text-end mono text-white">Rs. @pm.TotalAmount.ToString("N2")</td>
+                                <td class="text-end"><span class="badge-pill-modern badge-emerald">@pm.PercentageOfTotal%</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Cashier Performance Leaderboard -->
-<div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="fa-solid fa-user-check text-warning me-2"></i> Cashier Performance &amp; Efficiency Leaderboard</span>
-        <span class="badge bg-secondary">@cashiers.Count Cashiers</span>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Cashier Name</th>
-                        <th class="text-center">Total Invoices</th>
-                        <th class="text-end">Total Sales</th>
-                        <th class="text-end">Discounts Given</th>
-                        <th class="text-end">Average Basket Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (cashiers.Count == 0)
-                    {
-                        <tr><td colspan="5" class="text-center text-secondary py-3">No cashier activity in selected date range.</td></tr>
-                    }
-                    @foreach (var c in cashiers)
-                    {
-                        <tr>
-                            <td class="fw-bold text-light">@c.CashierName</td>
-                            <td class="text-center"><span class="badge bg-primary">@c.TotalInvoices</span></td>
-                            <td class="text-end text-success fw-semibold">Rs. @c.TotalSalesAmount.ToString("N2")</td>
-                            <td class="text-end text-warning">Rs. @c.TotalDiscountsGiven.ToString("N2")</td>
-                            <td class="text-end text-info">Rs. @c.AverageBasketValue.ToString("N2")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+<div class="glass-card mb-4">
+    <div class="glass-card-header">
+        <div>
+            <h5 class="fw-bold mb-1 text-white">
+                <i class="bi bi-trophy-fill text-amber me-2"></i>Cashier Performance & Efficiency Leaderboard
+            </h5>
+            <p class="text-secondary small mb-0">Speed of checkout, invoice volume, and average basket sizes</p>
         </div>
+        <span class="badge-pill-modern badge-indigo">@cashiers.Count Cashiers Active</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Cashier Name</th>
+                    <th class="text-center">Total Invoices</th>
+                    <th class="text-end">Total Sales</th>
+                    <th class="text-end">Discounts Given</th>
+                    <th class="text-end">Average Basket Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (cashiers.Count == 0)
+                {
+                    <tr><td colspan="5" class="text-center text-secondary py-4">No cashier shifts completed in this date range.</td></tr>
+                }
+                @foreach (var c in cashiers)
+                {
+                    <tr>
+                        <td class="fw-semibold text-white">
+                            <i class="bi bi-person-badge text-secondary me-2"></i>@c.CashierName
+                        </td>
+                        <td class="text-center">
+                            <span class="badge-pill-modern badge-indigo mono">@c.TotalInvoices</span>
+                        </td>
+                        <td class="text-end text-emerald fw-bold mono">Rs. @c.TotalSalesAmount.ToString("N2")</td>
+                        <td class="text-end text-amber mono">Rs. @c.TotalDiscountsGiven.ToString("N2")</td>
+                        <td class="text-end text-cyan mono">Rs. @c.AverageBasketValue.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

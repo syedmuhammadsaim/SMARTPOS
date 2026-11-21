@@ -1,78 +1,119 @@
 @model List<SmartPOS.Application.Features.Inventory.DTOs.StockBalanceDto>
 @{
-    ViewData["Title"] = "Inventory & Stock Valuation";
+    ViewData["Title"] = "Real-time Inventory & Valuation";
+    var totalVal = Model.Sum(x => x.TotalValuation);
+    var lowStockCount = Model.Count(x => x.IsLowStock);
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><i class="fa-solid fa-boxes-stacked text-primary me-2"></i>Inventory &amp; Stock Valuation</h2>
-        <p class="text-secondary mb-0">Live stock quantities across warehouses and retail branches</p>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h2 class="fw-bold mb-0 text-white">Live Stock & Valuation</h2>
+            <span class="badge-pill-modern badge-indigo">
+                <i class="bi bi-box-seam-fill"></i> @Model.Count Active SKUs
+            </span>
+        </div>
+        <p class="text-secondary mb-0">Multi-warehouse inventory balances, moving average costs, and safety thresholds</p>
     </div>
     <div class="d-flex gap-2">
-        <a asp-action="ExpiringBatches" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-triangle-exclamation me-1"></i> Near Expiry Tracker</a>
+        <a asp-action="ExpiringBatches" class="btn btn-modern-outline d-inline-flex align-items-center gap-2">
+            <i class="bi bi-calendar-event text-amber"></i> FEFO Expiry
+        </a>
+        <a asp-controller="Alerts" asp-action="Index" class="btn btn-modern-primary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-bell-fill"></i> @lowStockCount Low Stock Alerts
+        </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span>Stock Overview (@Model.Count items)</span>
-        <span class="badge bg-primary">Total Valuation: Rs. @Model.Sum(x => x.TotalValuation).ToString("N2")</span>
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-4">
+        <div class="glass-card">
+            <div class="text-secondary text-uppercase small fw-bold mb-1">Cumulative Stock Valuation</div>
+            <div class="h3 fw-bold text-white mono mb-0">Rs. @totalVal.ToString("N2")</div>
+            <div class="text-secondary small mt-1">Based on perpetual moving average cost</div>
+        </div>
     </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-dark table-hover mb-0">
-                <thead class="text-secondary small">
+    <div class="col-sm-6 col-xl-4">
+        <div class="glass-card">
+            <div class="text-secondary text-uppercase small fw-bold mb-1">Total Monitored SKUs</div>
+            <div class="h3 fw-bold text-white mono mb-0">@Model.Count</div>
+            <div class="text-secondary small mt-1">Across primary & secondary branch locations</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="glass-card">
+            <div class="text-secondary text-uppercase small fw-bold mb-1">Low Stock Threshold Warnings</div>
+            <div class="h3 fw-bold text-rose mono mb-0">@lowStockCount</div>
+            <div class="text-secondary small mt-1">Items at or below safety stock point</div>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="glass-card-header">
+        <h5 class="fw-bold mb-0 text-white">Warehouse Stock Breakdown</h5>
+        <span class="badge-pill-modern badge-indigo">Live Balances</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Product / Variant</th>
+                    <th>SKU</th>
+                    <th>Warehouse</th>
+                    <th class="text-end">Avg Cost Price</th>
+                    <th class="text-end">Qty on Hand</th>
+                    <th class="text-end">Safety Alert Qty</th>
+                    <th class="text-end">Total Valuation</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
                     <tr>
-                        <th>Product Name</th>
-                        <th>SKU</th>
-                        <th>Warehouse</th>
-                        <th class="text-end">Avg Cost Price</th>
-                        <th class="text-end">Qty on Hand</th>
-                        <th class="text-end">Min Alert Qty</th>
-                        <th class="text-end">Total Valuation</th>
-                        <th class="text-center">Status</th>
+                        <td colspan="8" class="text-center text-secondary py-5">
+                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                            No inventory records found.
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @if (!Model.Any())
+                }
+                else
+                {
+                    foreach (var item in Model)
                     {
                         <tr>
-                            <td colspan="8" class="text-center text-secondary py-5">No inventory records found.</td>
+                            <td>
+                                <div class="fw-semibold text-white">@item.ProductName</div>
+                                @if (!string.IsNullOrWhiteSpace(item.VariantName))
+                                {
+                                    <span class="badge-pill-modern badge-cyan py-0 px-2 mt-1">@item.VariantName</span>
+                                }
+                            </td>
+                            <td><span class="badge-pill-modern badge-indigo mono">@item.SKU</span></td>
+                            <td class="text-secondary">@item.WarehouseName</td>
+                            <td class="text-end mono">Rs. @item.AverageCostPrice.ToString("N2")</td>
+                            <td class="text-end fw-bold mono text-white fs-6">@item.QuantityOnHand.ToString("N0")</td>
+                            <td class="text-end mono text-secondary">@item.AlertQuantity.ToString("N0")</td>
+                            <td class="text-end text-emerald fw-bold mono">Rs. @item.TotalValuation.ToString("N2")</td>
+                            <td class="text-center">
+                                @if (item.IsLowStock)
+                                {
+                                    <span class="badge-pill-modern badge-rose">
+                                        <i class="bi bi-exclamation-circle-fill"></i> Low Stock
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-pill-modern badge-emerald">
+                                        <i class="bi bi-check-circle-fill"></i> Optimal
+                                    </span>
+                                }
+                            </td>
                         </tr>
                     }
-                    else
-                    {
-                        foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="fw-semibold">
-                                    @item.ProductName
-                                    @if (!string.IsNullOrWhiteSpace(item.VariantName))
-                                    {
-                                        <span class="badge bg-info text-dark ms-1">@item.VariantName</span>
-                                    }
-                                </td>
-                                <td><code>@item.SKU</code></td>
-                                <td>@item.WarehouseName</td>
-                                <td class="text-end">Rs. @item.AverageCostPrice.ToString("N2")</td>
-                                <td class="text-end fw-bold fs-6">@item.QuantityOnHand.ToString("N0")</td>
-                                <td class="text-end text-secondary">@item.AlertQuantity.ToString("N0")</td>
-                                <td class="text-end text-success fw-bold">Rs. @item.TotalValuation.ToString("N2")</td>
-                                <td class="text-center">
-                                    @if (item.IsLowStock)
-                                    {
-                                        <span class="badge bg-danger">Low Stock</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success">Optimal</span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

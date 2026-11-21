@@ -1,150 +1,416 @@
 ﻿@model SmartPOS.Web.Models.DashboardViewModel
 @{
-    ViewData["Title"] = "Executive Retail Dashboard";
+    ViewData["Title"] = "Executive Command Center";
+    var chartDays = ViewBag.ChartDays as List<string> ?? new List<string>();
+    var chartSales = ViewBag.ChartSales as List<decimal> ?? new List<decimal>();
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Page Header with Quick Actions -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><i class="fa-solid fa-chart-line text-info me-2"></i>Executive Retail Operations</h2>
-        <p class="text-secondary mb-0">Multi-branch enterprise monitoring, real-time sales &amp; stock intelligence</p>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h2 class="fw-bold mb-0 text-white">Retail Operations Hub</h2>
+            <span class="badge-pill-modern badge-indigo">
+                <i class="bi bi-broadcast"></i> Live Sync
+            </span>
+        </div>
+        <p class="text-secondary mb-0">Multi-outlet executive oversight, revenue trends, and mission-critical inventory health</p>
     </div>
-    <div class="d-flex gap-2">
-        <span class="badge bg-dark border border-secondary p-2"><i class="fa-regular fa-clock me-1"></i> Business Date: @DateTime.Now.ToString("dd MMM yyyy")</span>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <a asp-controller="Reports" asp-action="Index" class="btn btn-modern-outline d-inline-flex align-items-center gap-2">
+            <i class="bi bi-pie-chart-fill text-info"></i> Full P&L Report
+        </a>
+        <a asp-controller="Alerts" asp-action="Index" class="btn btn-modern-primary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-bell-fill"></i> View @(Model.LowStockAlertsCount + Model.ExpiringBatchesCount) Alerts
+        </a>
     </div>
 </div>
 
-<!-- TOP 4 METRIC CARDS -->
+<!-- 4 Top KPI Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="metric-card border-start border-4 border-success">
-            <div class="text-secondary small fw-bold text-uppercase">Today's Gross Sales</div>
-            <div class="metric-value text-success mt-1">Rs. @Model.TodaySales.ToString("N2")</div>
-            <div class="text-secondary small mt-1"><i class="fa-solid fa-receipt me-1"></i> @Model.TodayTransactions invoices generated</div>
+    <!-- Today's Sales -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="glass-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <span class="text-secondary text-uppercase small fw-bold">Today's Revenue</span>
+                <div class="kpi-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+            <div class="h3 fw-bold text-white mono mb-1">Rs. @Model.TodaySales.ToString("N2")</div>
+            <div class="d-flex align-items-center gap-2 text-secondary small">
+                <span class="badge-pill-modern badge-emerald py-0 px-2">
+                    <i class="bi bi-receipt"></i> @Model.TodayTransactions Orders
+                </span>
+                <span>Active Register</span>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="metric-card border-start border-4 border-primary">
-            <div class="text-secondary small fw-bold text-uppercase">Total Stock Valuation</div>
-            <div class="metric-value text-primary mt-1">Rs. @Model.TotalStockValuation.ToString("N2")</div>
-            <div class="text-secondary small mt-1"><i class="fa-solid fa-warehouse me-1"></i> Active warehouse inventory</div>
+
+    <!-- Inventory Valuation -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="glass-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <span class="text-secondary text-uppercase small fw-bold">Stock Valuation</span>
+                <div class="kpi-icon-box" style="background: rgba(99, 102, 241, 0.15); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.3);">
+                    <i class="bi bi-boxes"></i>
+                </div>
+            </div>
+            <div class="h3 fw-bold text-white mono mb-1">Rs. @Model.TotalStockValuation.ToString("N2")</div>
+            <div class="d-flex align-items-center gap-2 text-secondary small">
+                <span class="badge-pill-modern badge-indigo py-0 px-2">
+                    <i class="bi bi-shield-check"></i> FIFO/FEFO
+                </span>
+                <span>Central Warehouse</span>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="metric-card border-start border-4 border-warning">
-            <div class="text-secondary small fw-bold text-uppercase">Outstanding Customer Udhaar</div>
-            <div class="metric-value text-warning mt-1">Rs. @Model.TotalCustomerUdhaar.ToString("N2")</div>
-            <div class="text-secondary small mt-1"><i class="fa-solid fa-hand-holding-dollar me-1"></i> Total credit receivables</div>
+
+    <!-- Customer Udhaar -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="glass-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <span class="text-secondary text-uppercase small fw-bold">Pending Udhaar</span>
+                <div class="kpi-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+            </div>
+            <div class="h3 fw-bold text-white mono mb-1">Rs. @Model.TotalCustomerUdhaar.ToString("N2")</div>
+            <div class="d-flex align-items-center gap-2 text-secondary small">
+                <span class="badge-pill-modern badge-amber py-0 px-2">
+                    <i class="bi bi-hourglass-split"></i> Credit Limit
+                </span>
+                <a asp-action="CustomerAgeing" class="text-decoration-none text-warning small ms-auto">Ledger &rarr;</a>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="metric-card border-start border-4 border-danger">
-            <div class="text-secondary small fw-bold text-uppercase">Critical Stock Alerts</div>
-            <div class="metric-value text-danger mt-1">@(Model.LowStockAlertsCount + Model.ExpiringBatchesCount)</div>
-            <div class="text-secondary small mt-1"><i class="fa-solid fa-triangle-exclamation me-1"></i> @Model.LowStockAlertsCount low stock, @Model.ExpiringBatchesCount expiring</div>
+
+    <!-- Stock Alerts -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="glass-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <span class="text-secondary text-uppercase small fw-bold">Attention Required</span>
+                <div class="kpi-icon-box" style="background: rgba(244, 63, 94, 0.15); color: #F43F5E; border: 1px solid rgba(244, 63, 94, 0.3);">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+            </div>
+            <div class="h3 fw-bold text-white mono mb-1">@(Model.LowStockAlertsCount + Model.ExpiringBatchesCount)</div>
+            <div class="d-flex align-items-center gap-2 text-secondary small">
+                <span class="badge-pill-modern badge-rose py-0 px-2">
+                    @Model.LowStockAlertsCount Low Stock
+                </span>
+                <span class="badge-pill-modern badge-amber py-0 px-2">
+                    @Model.ExpiringBatchesCount Expiring
+                </span>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Main Analytics Row: 7-Day Revenue Trend Chart + Real-time Quick Links -->
+<div class="row g-4 mb-4">
+    <!-- Chart Area -->
+    <div class="col-lg-8">
+        <div class="glass-card h-100">
+            <div class="glass-card-header">
+                <div>
+                    <h5 class="fw-bold mb-1 text-white">7-Day Gross Revenue Trend</h5>
+                    <p class="text-secondary small mb-0">Daily gross transaction performance across branch tills</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge-pill-modern badge-indigo">
+                        <i class="bi bi-graph-up-arrow"></i> Real-time
+                    </span>
+                </div>
+            </div>
+            <div style="height: 280px; position: relative;">
+                <canvas id="weeklySalesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Operations & Health Panel -->
+    <div class="col-lg-4">
+        <div class="glass-card h-100 d-flex flex-column">
+            <div class="glass-card-header">
+                <h5 class="fw-bold mb-0 text-white">Quick Operations</h5>
+                <span class="badge-pill-modern badge-cyan">Hub Shortcuts</span>
+            </div>
+            <div class="d-flex flex-column gap-3 flex-grow-1 justify-content-around">
+                <a asp-action="Inventory" class="p-3 rounded-3 text-decoration-none d-flex align-items-center justify-content-between" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); transition: all 0.2s ease;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-2 text-emerald" style="background: rgba(16, 185, 129, 0.15);">
+                            <i class="bi bi-box-seam-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <div class="text-white fw-semibold small">Real-time Inventory</div>
+                            <div class="text-secondary small">Live batch balances & reorder levels</div>
+                        </div>
+                    </div>
+                    <i class="bi bi-chevron-right text-secondary"></i>
+                </a>
+
+                <a asp-action="ExpiringBatches" class="p-3 rounded-3 text-decoration-none d-flex align-items-center justify-content-between" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); transition: all 0.2s ease;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-2 text-amber" style="background: rgba(245, 158, 11, 0.15);">
+                            <i class="bi bi-calendar2-week-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <div class="text-white fw-semibold small">FEFO Expiry Management</div>
+                            <div class="text-secondary small">Critical 30-90 days expiration tracking</div>
+                        </div>
+                    </div>
+                    <i class="bi bi-chevron-right text-secondary"></i>
+                </a>
+
+                <a asp-action="CustomerAgeing" class="p-3 rounded-3 text-decoration-none d-flex align-items-center justify-content-between" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); transition: all 0.2s ease;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-2 text-cyan" style="background: rgba(6, 182, 212, 0.15);">
+                            <i class="bi bi-clock-history fs-5"></i>
+                        </div>
+                        <div>
+                            <div class="text-white fw-semibold small">Customer Ageing (Udhaar)</div>
+                            <div class="text-secondary small">30/60/90+ days overdue analysis</div>
+                        </div>
+                    </div>
+                    <i class="bi bi-chevron-right text-secondary"></i>
+                </a>
+
+                <a asp-controller="Licensing" asp-action="Index" class="p-3 rounded-3 text-decoration-none d-flex align-items-center justify-content-between" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); transition: all 0.2s ease;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-2 text-indigo" style="background: rgba(99, 102, 241, 0.15);">
+                            <i class="bi bi-fingerprint fs-5"></i>
+                        </div>
+                        <div>
+                            <div class="text-white fw-semibold small">Hardware Licensing & SaaS</div>
+                            <div class="text-secondary small">Device node activations & machine keys</div>
+                        </div>
+                    </div>
+                    <i class="bi bi-chevron-right text-secondary"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Tables: Expiring Batches & Highest Udhaar Receivables -->
 <div class="row g-4">
     <!-- Expiring Batches Table -->
     <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="fa-solid fa-pills text-danger me-2"></i>Expiring Batches (Within 60 Days - FEFO)</span>
-                <a asp-action="ExpiringBatches" class="btn btn-sm btn-outline-info">View All</a>
+        <div class="glass-card h-100">
+            <div class="glass-card-header">
+                <div>
+                    <h5 class="fw-bold mb-1 text-white">
+                        <i class="bi bi-clock-history text-danger me-2"></i>Critical Expiring Batches (FEFO)
+                    </h5>
+                    <p class="text-secondary small mb-0">Prioritize selling or returning batches expiring soon</p>
+                </div>
+                <a asp-action="ExpiringBatches" class="btn btn-sm btn-modern-outline">View All</a>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0">
-                        <thead class="text-secondary small">
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Product / SKU</th>
+                            <th>Batch #</th>
+                            <th>Expiry</th>
+                            <th class="text-end">Days Left</th>
+                            <th class="text-end">Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.ExpiringBatches.Any())
+                        {
                             <tr>
-                                <th>Product / SKU</th>
-                                <th>Batch #</th>
-                                <th>Expiry Date</th>
-                                <th class="text-end">Days Left</th>
-                                <th class="text-end">Qty</th>
+                                <td colspan="5" class="text-center text-secondary py-4">
+                                    <i class="bi bi-shield-check text-emerald fs-4 d-block mb-1"></i>
+                                    No batches expiring in the next 60 days.
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @if (!Model.ExpiringBatches.Any())
+                        }
+                        else
+                        {
+                            foreach (var b in Model.ExpiringBatches)
                             {
                                 <tr>
-                                    <td colspan="5" class="text-center text-secondary py-4">No batches expiring in the next 60 days.</td>
+                                    <td>
+                                        <div class="fw-semibold text-white">@b.ProductName</div>
+                                        <div class="small text-secondary mono">@b.SKU</div>
+                                    </td>
+                                    <td><span class="badge-pill-modern badge-indigo mono">@b.BatchNumber</span></td>
+                                    <td class="mono small">@b.ExpiryDate.ToString("dd MMM yyyy")</td>
+                                    <td class="text-end">
+                                        @if (b.DaysRemaining <= 15)
+                                        {
+                                            <span class="badge-pill-modern badge-rose">@b.DaysRemaining days</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-pill-modern badge-amber">@b.DaysRemaining days</span>
+                                        }
+                                    </td>
+                                    <td class="text-end fw-bold mono text-white">@b.Quantity.ToString("N0")</td>
                                 </tr>
                             }
-                            else
-                            {
-                                foreach (var b in Model.ExpiringBatches)
-                                {
-                                    <tr>
-                                        <td>
-                                            <div class="fw-semibold">@b.ProductName</div>
-                                            <div class="small text-secondary">@b.SKU</div>
-                                        </td>
-                                        <td><span class="badge bg-dark border border-secondary">@b.BatchNumber</span></td>
-                                        <td>@b.ExpiryDate.ToString("dd/MM/yyyy")</td>
-                                        <td class="text-end">
-                                            @if (b.DaysRemaining <= 15)
-                                            {
-                                                <span class="badge bg-danger">@b.DaysRemaining d</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-warning text-dark">@b.DaysRemaining d</span>
-                                            }
-                                        </td>
-                                        <td class="text-end fw-bold">@b.Quantity.ToString("N0")</td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- Top Udhaar Receivables -->
     <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="fa-solid fa-user-clock text-warning me-2"></i>Highest Udhaar Receivables</span>
-                <a asp-action="CustomerAgeing" class="btn btn-sm btn-outline-warning">Ageing Report</a>
+        <div class="glass-card h-100">
+            <div class="glass-card-header">
+                <div>
+                    <h5 class="fw-bold mb-1 text-white">
+                        <i class="bi bi-person-exclamation text-amber me-2"></i>Highest Udhaar Receivables
+                    </h5>
+                    <p class="text-secondary small mb-0">Customer credit ledgers requiring collection follow-up</p>
+                </div>
+                <a asp-action="CustomerAgeing" class="btn btn-sm btn-modern-outline">Ageing Matrix</a>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0">
-                        <thead class="text-secondary small">
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Contact</th>
+                            <th class="text-end">Outstanding</th>
+                            <th class="text-end">Overdue (60+ d)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.TopUdhaarCustomers.Any())
+                        {
                             <tr>
-                                <th>Customer Name</th>
-                                <th>Contact</th>
-                                <th class="text-end">Outstanding Balance</th>
-                                <th class="text-end">Overdue (60+ d)</th>
+                                <td colspan="4" class="text-center text-secondary py-4">
+                                    <i class="bi bi-check2-circle text-emerald fs-4 d-block mb-1"></i>
+                                    No pending customer credit balances found.
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @if (!Model.TopUdhaarCustomers.Any())
+                        }
+                        else
+                        {
+                            foreach (var c in Model.TopUdhaarCustomers)
                             {
                                 <tr>
-                                    <td colspan="4" class="text-center text-secondary py-4">No customer credit balances found.</td>
+                                    <td>
+                                        <div class="fw-semibold text-white">@c.CustomerName</div>
+                                    </td>
+                                    <td class="text-secondary small mono">@(c.Phone ?? "N/A")</td>
+                                    <td class="text-end text-amber fw-bold mono">Rs. @c.TotalOutstanding.ToString("N2")</td>
+                                    <td class="text-end mono">
+                                        @if ((c.Overdue_61_90 + c.Overdue_90Plus) > 0)
+                                        {
+                                            <span class="text-danger fw-semibold">Rs. @((c.Overdue_61_90 + c.Overdue_90Plus).ToString("N2"))</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">Rs. 0.00</span>
+                                        }
+                                    </td>
                                 </tr>
                             }
-                            else
-                            {
-                                foreach (var c in Model.TopUdhaarCustomers)
-                                {
-                                    <tr>
-                                        <td class="fw-semibold">@c.CustomerName</td>
-                                        <td class="text-secondary small">@(c.Phone ?? "N/A")</td>
-                                        <td class="text-end text-warning fw-bold">Rs. @c.TotalOutstanding.ToString("N2")</td>
-                                        <td class="text-end text-danger">Rs. @(c.Overdue_61_90 + c.Overdue_90Plus).ToString("N2")</td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('weeklySalesChart');
+            if (!ctx) return;
+
+            const days = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartDays));
+            const sales = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartSales));
+
+            const canvasCtx = ctx.getContext('2d');
+            const gradient = canvasCtx.createLinearGradient(0, 0, 0, 260);
+            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.45)');
+            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days.length > 0 ? days : ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    datasets: [{
+                        label: 'Gross Sales (PKR)',
+                        data: sales.length > 0 ? sales : [0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#6366F1',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#818CF8',
+                        pointBorderColor: '#0B0F19',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.35,
+                        fill: true,
+                        backgroundColor: gradient
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1E293B',
+                            titleColor: '#F8FAFC',
+                            bodyColor: '#A5B4FC',
+                            bodyFont: {
+                                family: 'JetBrains Mono',
+                                size: 13
+                            },
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: Rs. ' + Number(context.raw).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#94A3B8',
+                                font: {
+                                    family: 'Plus Jakarta Sans',
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#94A3B8',
+                                font: {
+                                    family: 'JetBrains Mono',
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return 'Rs ' + (value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
