@@ -6,12 +6,15 @@ using SmartPOS.Application.Common.Interfaces;
 using SmartPOS.Application.Features.Auth.Interfaces;
 using SmartPOS.Application.Features.Communication;
 using SmartPOS.Application.Features.Customers;
+using SmartPOS.Application.Features.Expenses;
 using SmartPOS.Application.Features.FBR;
 using SmartPOS.Application.Features.ImportExport;
 using SmartPOS.Application.Features.Inventory;
 using SmartPOS.Application.Features.POS.Interfaces;
 using SmartPOS.Application.Features.Products;
+using SmartPOS.Application.Features.Promotions;
 using SmartPOS.Application.Features.Purchasing;
+using SmartPOS.Application.Features.Returns;
 using SmartPOS.Application.Features.Sequences.Interfaces;
 using SmartPOS.Infrastructure.Data;
 using SmartPOS.Infrastructure.Identity;
@@ -40,6 +43,9 @@ public static class DependencyInjection
         services.AddScoped<IFbrService, FbrService>();
         services.AddScoped<IWhatsAppService, WhatsAppService>();
         services.AddScoped<IImportService, ImportService>();
+        services.AddScoped<IReturnService, ReturnService>();
+        services.AddScoped<IPromotionGiftCardService, PromotionGiftCardService>();
+        services.AddScoped<IExpenseService, ExpenseService>();
         services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
         services.AddDbContext<SmartPOSDbContext>((sp, options) =>
