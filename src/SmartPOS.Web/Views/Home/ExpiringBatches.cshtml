@@ -1,0 +1,75 @@
+@model List<SmartPOS.Application.Features.Inventory.DTOs.ExpiringStockAlertDto>
+@{
+    ViewData["Title"] = "Expiry & Batch Tracking";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-calendar-xmark text-danger me-2"></i>Batch Expiry Monitoring (FEFO)</h2>
+        <p class="text-secondary mb-0">First-Expiry-First-Out stock batches expiring within 90 days</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Expiring Batches List (@Model.Count batches)</span>
+        <span class="badge bg-danger">Critical Expiry Warning</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0">
+                <thead class="text-secondary small">
+                    <tr>
+                        <th>Product / Medicine Name</th>
+                        <th>SKU</th>
+                        <th>Batch Number</th>
+                        <th>Warehouse</th>
+                        <th>Expiry Date</th>
+                        <th class="text-end">Days Remaining</th>
+                        <th class="text-end">Stock Quantity</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-secondary py-5">All active product batches have safe expiry horizons.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var b in Model)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@b.ProductName</td>
+                                <td><code>@b.SKU</code></td>
+                                <td><span class="badge bg-dark border border-secondary">@b.BatchNumber</span></td>
+                                <td>@b.WarehouseName</td>
+                                <td>@b.ExpiryDate.ToString("dd MMM yyyy")</td>
+                                <td class="text-end">
+                                    @if (b.DaysRemaining <= 0)
+                                    {
+                                        <span class="badge bg-danger">EXPIRED</span>
+                                    }
+                                    else if (b.DaysRemaining <= 30)
+                                    {
+                                        <span class="badge bg-danger">@b.DaysRemaining Days</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">@b.DaysRemaining Days</span>
+                                    }
+                                </td>
+                                <td class="text-end fw-bold text-info">@b.Quantity.ToString("N0")</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-warning" title="Return to Supplier or Discount"><i class="fa-solid fa-arrow-rotate-left"></i> Return</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
