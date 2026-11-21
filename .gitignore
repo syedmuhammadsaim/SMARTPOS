@@ -1,0 +1,48 @@
+## Build and release folders
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+*.svclog
+
+## Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## Rider / ReSharper
+_ReSharper*/
+*.DotSettings.user
+.idea/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userprefs
+*.docstates
+
+## Local database files
+*.mdf
+*.ldf
+*.ndf
+
+## Packages
+*.nupkg
+packages/
+
+## Environment / Secrets
+appsettings.*.local.json
+.env
+.env.*
