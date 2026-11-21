@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0F19" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+
+    <!-- Brand Vibrant Gradients -->
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+
+    <linearGradient id="accentGlow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0.9" />
+    </linearGradient>
+
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="60%" stop-color="#F1F5F9" />
+      <stop offset="100%" stop-color="#CBD5E1" />
+    </linearGradient>
+
+    <linearGradient id="posGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#818CF8" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+
+    <!-- Soft Ambient Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="subtleGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <style>
+    .brand-title {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    .brand-subtitle {
+      font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace, sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    .badge-text {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+  </style>
+
+  <!-- Ambient Backdrop -->
+  <rect width="800" height="240" rx="28" fill="url(#bgGrad)" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1.5"/>
+
+  <!-- Subtle grid pattern overlay -->
+  <g opacity="0.05">
+    <path d="M0 60 H800 M0 120 H800 M0 180 H800" stroke="#FFFFFF" stroke-width="1" />
+    <path d="M120 0 V240 M240 0 V240 M360 0 V240 M480 0 V240 M600 0 V240 M720 0 V240" stroke="#FFFFFF" stroke-width="1" />
+  </g>
+
+  <!-- ICON EMBLEM (Left Side) -->
+  <g transform="translate(60, 40)">
+    <!-- Ambient Glow behind emblem -->
+    <circle cx="80" cy="80" r="70" fill="url(#primaryGrad)" opacity="0.22" filter="url(#glow)"/>
+
+    <!-- Outer Hex-Shield Container -->
+    <path d="M80 10 
+             L140 45 
+             L140 115 
+             L80 150 
+             L20 115 
+             L20 45 Z" 
+          fill="#151D2F" 
+          stroke="url(#primaryGrad)" 
+          stroke-width="3" 
+          stroke-linejoin="round" />
+
+    <!-- Inner Smart Stylized 'S' + Checkout Terminal Lightning Dynamic -->
+    <!-- Top Arc of 'S' / Scanner Horizon -->
+    <path d="M115 50 
+             C100 35, 65 35, 52 48 
+             C40 60, 48 78, 65 84 
+             L95 95 
+             C115 102, 122 118, 110 132 
+             C98 145, 62 145, 45 130" 
+          fill="none" 
+          stroke="url(#primaryGrad)" 
+          stroke-width="11" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          filter="url(#subtleGlow)"/>
+
+    <!-- Lightning Bolt / Laser Scan Bar (Speed & Precision) -->
+    <path d="M88 42 L68 85 L98 85 L72 135" 
+          fill="none" 
+          stroke="url(#accentGlow)" 
+          stroke-width="5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" />
+
+    <!-- Smart Digital Sensor Dots -->
+    <circle cx="120" cy="70" r="4" fill="#06B6D4" />
+    <circle cx="128" cy="85" r="3.5" fill="#6366F1" />
+    <circle cx="124" cy="100" r="3" fill="#10B981" />
+  </g>
+
+  <!-- LOGO TYPOGRAPHY (Right Side) -->
+  <g transform="translate(250, 75)">
+    <!-- SMARTPOS Name -->
+    <text x="0" y="55" class="brand-title" font-size="68" fill="url(#textGrad)">
+      SMART<tspan fill="url(#posGrad)">POS</tspan>
+    </text>
+
+    <!-- Version 1 Badge -->
+    <g transform="translate(380, 8)">
+      <rect x="0" y="0" width="80" height="24" rx="12" fill="rgba(99, 102, 241, 0.18)" stroke="rgba(99, 102, 241, 0.45)" stroke-width="1.2"/>
+      <circle cx="12" cy="12" r="3.5" fill="#10B981"/>
+      <text x="24" y="16" class="badge-text" fill="#A5B4FC">v1.0</text>
+    </g>
+
+    <!-- Subtitle / Tagline -->
+    <text x="4" y="94" class="brand-subtitle" fill="#94A3B8">
+      Enterprise Retail Platform &amp; POS Engine
+    </text>
+
+    <!-- Capability Indicators Pill Bar -->
+    <g transform="translate(4, 114)">
+      <!-- Pill 1: Multi-Branch -->
+      <rect x="0" y="0" width="105" height="20" rx="6" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(255, 255, 255, 0.08)"/>
+      <text x="52" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" font-weight="600" fill="#94A3B8" text-anchor="middle">Multi-Branch</text>
+
+      <!-- Pill 2: FEFO / Batches -->
+      <rect x="115" y="0" width="95" height="20" rx="6" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(255, 255, 255, 0.08)"/>
+      <text x="162" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" font-weight="600" fill="#94A3B8" text-anchor="middle">FEFO Expiry</text>
+
+      <!-- Pill 3: FBR Fiscal -->
+      <rect x="220" y="0" width="85" height="20" rx="6" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(255, 255, 255, 0.08)"/>
+      <text x="262" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" font-weight="600" fill="#10B981" text-anchor="middle">FBR Verified</text>
+
+      <!-- Pill 4: Offline POS -->
+      <rect x="315" y="0" width="85" height="20" rx="6" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(255, 255, 255, 0.08)"/>
+      <text x="357" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" font-weight="600" fill="#818CF8" text-anchor="middle">Offline Ready</text>
+    </g>
+  </g>
+</svg>
