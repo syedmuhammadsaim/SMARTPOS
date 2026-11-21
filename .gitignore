@@ -1,10 +1,21 @@
-## Build and release folders
+# ====================================================================
+# SMARTPOS - Official Git Ignore Configuration
+# Prevents temporary, build, user-specific, binary, and OS files
+# ====================================================================
+
+## Build Outputs & Intermediate Compilation Files
 [Bb]in/
 [Oo]bj/
-[Ll]og/
-[Ll]ogs/
+**/[Bb]in/
+**/[Oo]bj/
+[Aa]rms/
+[Aa]rm64/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
 
-## Visual Studio
+## Visual Studio & IDE Caches
 .vs/
 *.user
 *.userosscache
@@ -13,36 +24,83 @@
 *.pidb
 *.booproj
 *.svclog
+*.visualstudio/
 
 ## Visual Studio Code
-.vscode/
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.history/
+.ionide/
 
-## Rider / ReSharper
+## JetBrains Rider / ReSharper
+.idea/
 _ReSharper*/
 *.DotSettings.user
-.idea/
 
-## User-specific files
-*.rsuser
-*.suo
-*.user
-*.userprefs
-*.docstates
+## Test Results & Code Coverage
+[Tt]est[Rr]esult*/
+[Tt]est[Rr]esults/
+**/[Tt]est[Rr]esults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+*.lcov
 
-## Local database files
+## Logs & Diagnostics
+*.log
+[Ll]og/
+[Ll]ogs/
+**/[Ll]og/
+**/[Ll]ogs/
+*.dmp
+*.crash
+*.stackdump
+
+## Temporary & Swap Files
+*.tmp
+*.temp
+*~
+*.bak
+*.swp
+*.swo
+
+## Local Database & Cache Storage
 *.mdf
 *.ldf
 *.ndf
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 
-## Packages
+## NuGet Packages & Output Artifacts
 *.nupkg
+*.snupkg
 packages/
+**/packages/
+!**/packages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
 
-## Environment / Secrets
-appsettings.*.local.json
+## Environment Variables & Secret Configurations
 .env
 .env.*
+!.env.example
+appsettings*.local.json
+appsettings*.Development.local.json
+*.publishsettings
+
+## OS Generated Junk Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
