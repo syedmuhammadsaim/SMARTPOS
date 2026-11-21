@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SmartPOS.Domain.Entities.Catalog;
 using SmartPOS.Domain.Entities.Identity;
 using SmartPOS.Domain.Entities.Pricing;
@@ -11,6 +12,23 @@ namespace SmartPOS.Infrastructure.Data;
 
 public static class DbInitializer
 {
+    public static async Task EnsureDatabaseCreatedAndSeededAsync(IServiceProvider serviceProvider)
+    {
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<SmartPOSDbContext>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            await context.Database.EnsureCreatedAsync();
+            await SeedSystemDefaultsAsync(context, roleManager, userManager);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SmartPOS DbInitializer] Database notice: {ex.Message}");
+        }
+    }
     public static async Task SeedSystemDefaultsAsync(
         SmartPOSDbContext context,
         RoleManager<ApplicationRole> roleManager,

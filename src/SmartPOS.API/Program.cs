@@ -42,13 +42,18 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Auto-initialize and seed DB schema if available
+await DbInitializer.EnsureDatabaseCreatedAndSeededAsync(app.Services);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 
