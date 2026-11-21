@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartPOS.Application.Common.Interfaces;
+using SmartPOS.Application.Features.Auth.Interfaces;
+using SmartPOS.Application.Features.POS.Interfaces;
+using SmartPOS.Application.Features.Sequences.Interfaces;
 using SmartPOS.Infrastructure.Data;
 using SmartPOS.Infrastructure.Identity;
 using SmartPOS.Infrastructure.Services;
@@ -20,6 +23,10 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ITenantProvider, TenantProvider>();
+        services.AddScoped<IDocumentSequenceService, DocumentSequenceService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPOSService, POSService>();
+        services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
         services.AddDbContext<SmartPOSDbContext>((sp, options) =>
         {

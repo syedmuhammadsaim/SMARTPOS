@@ -1,4 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using SmartPOS.Infrastructure;
 using SmartPOS.Infrastructure.Data;
 using SmartPOS.Infrastructure.Identity;
@@ -7,6 +10,31 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add Infrastructure & EF Core DbContext
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Add JWT Authentication
+var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? "SmartPOS_Enterprise_Super_Secret_Key_For_Jwt_Authentication_2026_!";
+var key = Encoding.UTF8.GetBytes(jwtSecret);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "SmartPOS.API",
+        ValidAudience = builder.Configuration["JwtSettings:Audience"] ?? "SmartPOS.Clients",
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
 // Add API Controllers & OpenAPI
 builder.Services.AddControllers();
