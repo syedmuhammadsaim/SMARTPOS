@@ -139,6 +139,13 @@
                             Padding="10,6"
                             ToolTip="Open Price Checker Kiosk mode" />
 
+                    <Button Content="↩️ Returns" 
+                            Command="{Binding OpenReturnDialogCommand}" 
+                            Style="{StaticResource ActionButton}" 
+                            Margin="4,0"
+                            Padding="10,6"
+                            ToolTip="Open Sale Return &amp; Refund window" />
+
                     <Button Content="{Binding IsUrdu, Converter={x:Null}, FallbackValue='اردو / EN'}" 
                             Command="{Binding ToggleLanguageCommand}" 
                             Style="{StaticResource ActionButton}" 

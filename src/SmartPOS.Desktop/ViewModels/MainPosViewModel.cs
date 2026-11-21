@@ -141,6 +141,7 @@ public class MainPosViewModel : BaseViewModel
     public ICommand SyncOfflineCommand { get; }
     public ICommand OpenCustomerDisplayCommand { get; }
     public ICommand OpenPriceCheckerCommand { get; }
+    public ICommand OpenReturnDialogCommand { get; }
 
     public MainPosViewModel()
     {
@@ -164,6 +165,7 @@ public class MainPosViewModel : BaseViewModel
         SyncOfflineCommand = new RelayCommand(async _ => await SyncOfflineOrdersAsync());
         OpenCustomerDisplayCommand = new RelayCommand(_ => OpenCustomerDisplay());
         OpenPriceCheckerCommand = new RelayCommand(_ => OpenPriceChecker());
+        OpenReturnDialogCommand = new RelayCommand(_ => OpenReturnDialog());
 
         // Preload demo customers
         Customers.Add(new CustomerDto { Id = Guid.NewGuid(), Name = "Walk-in Customer", Phone = "N/A", CreditLimit = 0m, CurrentBalance = 0m });
@@ -187,6 +189,13 @@ public class MainPosViewModel : BaseViewModel
     {
         var kiosk = new Views.PriceCheckerWindow(_api, _offlineQueue);
         kiosk.ShowDialog();
+    }
+
+    public void OpenReturnDialog()
+    {
+        var dlg = new Views.ReturnDialog(_api);
+        dlg.Owner = System.Windows.Application.Current?.MainWindow;
+        dlg.ShowDialog();
     }
 
     public async Task SyncOfflineOrdersAsync()

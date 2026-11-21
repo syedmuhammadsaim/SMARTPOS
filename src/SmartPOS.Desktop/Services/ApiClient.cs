@@ -3,8 +3,12 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using SmartPOS.Application.Features.Auth.DTOs;
 using SmartPOS.Application.Features.Customers.DTOs;
+using SmartPOS.Application.Features.Expenses.DTOs;
+using SmartPOS.Application.Features.Loyalty.DTOs;
 using SmartPOS.Application.Features.POS.DTOs;
 using SmartPOS.Application.Features.Products.DTOs;
+using SmartPOS.Application.Features.Promotions.DTOs;
+using SmartPOS.Application.Features.Returns.DTOs;
 
 namespace SmartPOS.Desktop.Services;
 
@@ -158,6 +162,111 @@ public class ApiClient
         catch
         {
             return new List<CustomerDto>();
+        }
+    }
+
+    public async Task<OrderReturnEligibilityDto?> GetOrderForReturnAsync(string invoiceNo)
+    {
+        try
+        {
+            var res = await _http.GetAsync($"/api/v1/returns/orders/{Uri.EscapeDataString(invoiceNo)}/eligibility");
+            if (!res.IsSuccessStatusCode) return null;
+            return await res.Content.ReadFromJsonAsync<OrderReturnEligibilityDto>();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<SaleReturnResponse?> ProcessReturnAsync(CreateSaleReturnRequest request)
+    {
+        try
+        {
+            var res = await _http.PostAsJsonAsync("/api/v1/returns", request);
+            if (!res.IsSuccessStatusCode) return null;
+            return await res.Content.ReadFromJsonAsync<SaleReturnResponse>();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<ValidateCouponResponse?> ValidateCouponAsync(string code, decimal currentTotal, Guid? customerId = null)
+    {
+        try
+        {
+            var req = new ValidateCouponRequest(code, currentTotal, CurrentBranchId, customerId);
+            var res = await _http.PostAsJsonAsync("/api/v1/promotions/coupons/validate", req);
+            if (!res.IsSuccessStatusCode) return null;
+            return await res.Content.ReadFromJsonAsync<ValidateCouponResponse>();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<GiftCardDto?> CheckGiftCardAsync(string cardNo)
+    {
+        try
+        {
+            var res = await _http.GetAsync($"/api/v1/giftcards/{Uri.EscapeDataString(cardNo)}");
+            if (!res.IsSuccessStatusCode) return null;
+            return await res.Content.ReadFromJsonAsync<GiftCardDto>();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<CustomerLoyaltyProfileDto?> GetCustomerLoyaltyProfileAsync(Guid customerId)
+    {
+        try
+        {
+            var res = await _http.GetAsync($"/api/v1/loyalty/customer/{customerId}");
+            if (!res.IsSuccessStatusCode) return null;
+            return await res.Content.ReadFromJsonAsync<CustomerLoyaltyProfileDto>();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<LoyaltyRedemptionResultDto?> RedeemLoyaltyPointsAsync(Guid customerId, decimal points, Guid? orderId = null)
+    {
+        try
+        {
+            var req = new RedeemPointsRequestDto
+            {
+                CustomerId = customerId,
+                PointsToRedeem = points,
+                POSOrderId = orderId
+            };
+            var res = await _http.PostAsJsonAsync("/api/v1/loyalty/redeem", req);
+            if (!res.IsSuccessStatusCode) return null;
+            return await res.Content.ReadFromJsonAsync<LoyaltyRedemptionResultDto>();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<ExpenseDto?> RecordTillExpenseAsync(CreateExpenseRequest request)
+    {
+        try
+        {
+            var res = await _http.PostAsJsonAsync("/api/v1/expenses", request);
+            if (!res.IsSuccessStatusCode) return null;
+            return await res.Content.ReadFromJsonAsync<ExpenseDto>();
+        }
+        catch
+        {
+            return null;
         }
     }
 }
