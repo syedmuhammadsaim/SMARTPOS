@@ -9,8 +9,11 @@ using SmartPOS.Application.Features.Communication;
 using SmartPOS.Application.Features.Customers;
 using SmartPOS.Application.Features.Expenses;
 using SmartPOS.Application.Features.FBR;
+using SmartPOS.Application.Features.Feedback;
 using SmartPOS.Application.Features.ImportExport;
 using SmartPOS.Application.Features.Inventory;
+using SmartPOS.Application.Features.Licensing;
+using SmartPOS.Application.Features.Localization;
 using SmartPOS.Application.Features.Loyalty;
 using SmartPOS.Application.Features.POS.Interfaces;
 using SmartPOS.Application.Features.Products;
@@ -52,6 +55,9 @@ public static class DependencyInjection
         services.AddScoped<ISmartAlertService, SmartAlertService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<ILoyaltyService, LoyaltyService>();
+        services.AddScoped<ILicenseService, LicenseService>();
+        services.AddScoped<IFeedbackService, FeedbackService>();
+        services.AddScoped<IReceiptTemplateService, ReceiptTemplateService>();
         services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
         services.AddDbContext<SmartPOSDbContext>((sp, options) =>

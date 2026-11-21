@@ -1,0 +1,153 @@
+@model SmartPOS.Application.Features.Alerts.DTOs.AlertSummaryDto
+@{
+    ViewData["Title"] = "Smart Stock Alerts & Expiry";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-bell text-warning me-2"></i> Smart Stock Alerts &amp; Expiry Monitor</h2>
+        <p class="text-secondary mb-0">Automated thresholds for Low Stock, FEFO Expiry Tracking, and Dead Capital</p>
+    </div>
+</div>
+
+<!-- Alert Overview Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="metric-card border-start border-4 border-danger">
+            <div class="text-secondary small fw-semibold">LOW STOCK ITEMS</div>
+            <div class="metric-value text-danger">@Model.TotalLowStockCount</div>
+            <div class="text-secondary small">Below minimum reorder level</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card border-start border-4 border-danger">
+            <div class="text-secondary small fw-semibold">EXPIRED BATCHES</div>
+            <div class="metric-value text-danger">@Model.TotalExpiredCount</div>
+            <div class="text-secondary small">Requires immediate write-off/return</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card border-start border-4 border-warning">
+            <div class="text-secondary small fw-semibold">EXPIRING WITHIN 90 DAYS</div>
+            <div class="metric-value text-warning">@Model.TotalExpiringSoonCount</div>
+            <div class="text-secondary small">Prioritize sale via FEFO</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card border-start border-4 border-info">
+            <div class="text-secondary small fw-semibold">TIED UP IN DEAD STOCK</div>
+            <div class="metric-value text-info">Rs. @Model.TotalTiedUpCapitalInDeadStock.ToString("N0")</div>
+            <div class="text-secondary small">@Model.TotalDeadStockCount products with no 90-day sales</div>
+        </div>
+    </div>
+</div>
+
+<!-- Low Stock Table -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> Low Stock Threshold Alerts</span>
+        <span class="badge bg-danger">@Model.LowStockAlerts.Count Alert(s)</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>SKU</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th class="text-center">Current Stock</th>
+                        <th class="text-center">Min Threshold</th>
+                        <th class="text-end">Suggested Reorder Qty</th>
+                        <th>Warehouse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.LowStockAlerts.Count == 0)
+                    {
+                        <tr><td colspan="7" class="text-center text-success py-3"><i class="fa-solid fa-check-circle me-1"></i> All products are sufficiently stocked above minimum levels!</td></tr>
+                    }
+                    @foreach (var alert in Model.LowStockAlerts)
+                    {
+                        <tr>
+                            <td><code>@alert.Sku</code></td>
+                            <td class="fw-bold text-light">@alert.Name</td>
+                            <td class="text-secondary">@alert.CategoryName</td>
+                            <td class="text-center"><span class="badge bg-danger fs-6">@alert.CurrentStock.ToString("0.##")</span></td>
+                            <td class="text-center text-secondary">@alert.MinStock.ToString("0.##")</td>
+                            <td class="text-end text-warning fw-bold">+@alert.ReorderSuggestedQty.ToString("0.##")</td>
+                            <td class="text-secondary">@alert.WarehouseName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Expiry Warning Batches -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-calendar-xmark text-warning me-2"></i> Near-Expiry &amp; Expired Batches (FEFO Tracking)</span>
+        <span class="badge bg-warning text-dark">@Model.ExpiryAlerts.Count Batch(es)</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Batch No</th>
+                        <th>Product</th>
+                        <th class="text-center">Expiry Date</th>
+                        <th class="text-center">Days Remaining</th>
+                        <th class="text-center">Stock on Hand</th>
+                        <th class="text-end">Urgency Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ExpiryAlerts.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-center text-success py-3"><i class="fa-solid fa-check-circle me-1"></i> No batches expiring within the next 90 days.</td></tr>
+                    }
+                    @foreach (var exp in Model.ExpiryAlerts)
+                    {
+                        <tr>
+                            <td><code>@exp.BatchNo</code></td>
+                            <td class="fw-bold text-light">@exp.Name</td>
+                            <td class="text-center">@exp.ExpiryDate.ToString("yyyy-MM-dd")</td>
+                            <td class="text-center">
+                                @if (exp.DaysUntilExpiry <= 0)
+                                {
+                                    <span class="badge bg-danger">Expired</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">@exp.DaysUntilExpiry days</span>
+                                }
+                            </td>
+                            <td class="text-center fw-bold">@exp.QtyOnHand.ToString("0.##")</td>
+                            <td class="text-end">
+                                @if (exp.UrgencyLevel == "Expired")
+                                {
+                                    <span class="badge bg-danger">EXPIRED</span>
+                                }
+                                else if (exp.UrgencyLevel == "Critical30")
+                                {
+                                    <span class="badge bg-danger">CRITICAL (Under 30 Days)</span>
+                                }
+                                else if (exp.UrgencyLevel == "Warning60")
+                                {
+                                    <span class="badge bg-warning text-dark">WARNING (Under 60 Days)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info text-dark">NOTICE (Under 90 Days)</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
