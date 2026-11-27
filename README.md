@@ -5,7 +5,7 @@
 <h1 align="center">SMARTPOS ENTERPRISE</h1>
 
 <p align="center">
-  <strong>Multi-Tenant SaaS Point of Sale &amp; Business Management Platform</strong><br>
+  <strong>Multi-Tenant SaaS Point of Sale &amp; Business Management Web Platform</strong><br>
   <em>"One Platform. Multiple Businesses. Complete Business Control."</em>
 </p>
 
@@ -13,18 +13,81 @@
   <img src="https://img.shields.io/badge/Version-2.0.0--Enterprise-6366F1?style=for-the-badge&logo=semver&logoColor=white" alt="Version 2.0.0" />
   <img src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10" />
   <img src="https://img.shields.io/badge/C%23-13.0-239120?style=for-the-badge&logo=csharp&logoColor=white" alt="C# 13" />
+  <img src="https://img.shields.io/badge/Architecture-Single%20Web%20Project-06B6D4?style=for-the-badge&logo=dotnet&logoColor=white" alt="Single Web Project" />
   <img src="https://img.shields.io/badge/Multi--Tenant-SaaS%20Logical%20Isolation-10B981?style=for-the-badge&logo=securityscorecard&logoColor=white" alt="Multi-Tenant" />
   <img src="https://img.shields.io/badge/Database-SQL%20Server%20Enterprise-CC292B?style=for-the-badge&logo=microsoftsqlserver&logoColor=white" alt="SQL Server" />
-  <img src="https://img.shields.io/badge/Tests-32%20Passed-10B981?style=for-the-badge&logo=checkmarx&logoColor=white" alt="32 Tests Passed" />
+  <img src="https://img.shields.io/badge/Build-0%20Errors%20Passing-10B981?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Build Passing" />
 </p>
 
 ---
 
 ## 📌 Executive Summary
 
-**SMARTPOS ENTERPRISE** is a commercial-grade, multi-tenant SaaS Point of Sale (POS) and retail enterprise operating system. Multiple independent retail companies can register, choose subscription plans, operate multiple branches and checkout counters, manage inventory and warehouses, process sales, and track financial performance through a centralized web application.
+**SMARTPOS ENTERPRISE** is a commercial-grade, multi-tenant SaaS Point of Sale (POS) and business management web application. Multiple independent companies can register, select subscription plans, operate multiple branches and checkout counters, manage inventory and warehouses, process sales, and track financial performance through a single centralized web application.
 
-Engineered with clean architectural discipline, strict logical database partitioning via EF Core global query filters, claims-verified tenant resolution, and zero trust on client-supplied tenant identifiers.
+The entire solution is consolidated into a **single self-contained ASP.NET Core 10 Web application project folder** (`src/SmartPOS.Web`), eliminating redundant desktop applications, extra class library layers, and fragmented dependencies.
+
+---
+
+## 📂 Project Directory Structure
+
+The entire platform is organized inside **[`src/SmartPOS.Web`](file:///c:/Users/Saim/Desktop/SMARTPOS%20ENTERPRISE/src/SmartPOS.Web)**:
+
+```
+SmartPOS ENTERPRISE/
+├── .git/
+├── assets/
+│   └── logo.png
+├── src/
+│   └── SmartPOS.Web/                      <-- All-in-one standalone Web Application
+│       ├── Application/                   <-- DTOs & Service Contracts
+│       │   ├── Common/                    <-- Interfaces (ITenantProvider)
+│       │   └── Features/                  <-- POS, Alerts, Auth, Inventory, Reports DTOs
+│       ├── Controllers/                   <-- MVC Action Controllers
+│       │   ├── AccountController.cs       <-- Login, Register, SaaS Onboarding
+│       │   ├── BranchesController.cs      <-- Multi-Branch Management
+│       │   ├── CategoriesController.cs    <-- Categories, Brands, Units
+│       │   ├── CountersController.cs      <-- POS Cashier Counters
+│       │   ├── CustomersController.cs     <-- Customer Profiles & Udhaar Ledgers
+│       │   ├── DashboardController.cs     <-- Executive Metrics & Chart.js Visuals
+│       │   ├── ExpensesController.cs      <-- Till & Branch Operational Expenses
+│       │   ├── HomeController.cs          <-- Marketing Landing Pages
+│       │   ├── InventoryController.cs     <-- Stock Balances, Adjustments, Transfers
+│       │   ├── POSController.cs           <-- Fast Web POS Billing & Checkout
+│       │   ├── ProductsController.cs      <-- Products & Code128 Barcode Printing
+│       │   ├── PurchasesController.cs     <-- POs, Goods Receipt, Supplier Ledgers
+│       │   ├── SalesController.cs         <-- Invoices History & Refunds
+│       │   ├── ShiftsController.cs        <-- Till Opening, Blind Close, X/Z Reports
+│       │   ├── SubscriptionController.cs  <-- Tenant Plan Upgrades & Billing
+│       │   ├── SuperAdminController.cs    <-- Platform Super Admin Dashboard
+│       │   └── SuppliersController.cs     <-- Supplier Directory & Ledger Accounts
+│       ├── Domain/                        <-- Core Business Entities & Enums
+│       │   ├── Common/                    <-- BaseEntity, BaseTenantEntity, ITenantScoped
+│       │   ├── Entities/                  <-- Catalog, Sales, Inventory, SaaS, Finance
+│       │   └── Enums/                     <-- OrderStatus, TransactionTypes, Enums
+│       ├── Hubs/                          <-- SignalR Real-Time Notification Hubs
+│       ├── Infrastructure/                <-- Data Persistence & Security
+│       │   ├── Data/                      <-- SmartPOSDbContext & DbInitializer
+│       │   ├── Identity/                  <-- Identity User & Claims Principal Factory
+│       │   ├── Migrations/                <-- EF Core Code First Migrations
+│       │   └── Services/                  <-- POS, Sequences, TenantProvider, Auth
+│       ├── Models/                        <-- ViewModels for Auth & Dashboard
+│       ├── Views/                         <-- Razor Views (Dark Canvas Bootstrap 5 Theme)
+│       │   ├── Account/                   <-- Login, Register, AccessDenied
+│       │   ├── Dashboard/                 <-- Executive Visual Analytics
+│       │   ├── Home/                      <-- Landing, Features, Pricing, About, FAQ
+│       │   ├── POS/                       <-- Web POS Register & 80mm Thermal Receipt
+│       │   ├── Products/                  <-- Catalog & Barcode Label Sheets
+│       │   ├── Shifts/                    <-- Till Shifts & X/Z Printed Reports
+│       │   ├── SuperAdmin/                <-- Platform-wide Companies & Plans
+│       │   └── Shared/                    <-- _Layout.cshtml (Sidebar navigation)
+│       ├── wwwroot/                       <-- Static CSS, JS, Vendor Libraries
+│       ├── appsettings.json               <-- Connection strings & App Configuration
+│       ├── Program.cs                     <-- Web Application Host & Middleware Pipeline
+│       └── SmartPOS.Web.csproj            <-- Clean self-contained project file
+├── README.md                              <-- Project Documentation
+└── SmartPOS.slnx                          <-- Visual Studio Solution File
+```
 
 ---
 
@@ -64,45 +127,28 @@ Engineered with clean architectural discipline, strict logical database partitio
 
 ### 🔒 Enterprise SaaS Tenant Isolation
 - **Claims-Verified Tenant Context**: The tenant ID is resolved exclusively from the authenticated user's verified claims (`BusinessId`). Query strings or form posts cannot manipulate tenant boundaries.
-- **Global EF Core Query Filters**: Every tenant-owned entity (`Product`, `POSOrder`, `Customer`, `StockBalance`, `Expense`, `Supplier`, `Branch`, `Counter`, etc.) implements `ITenantScoped`. All database queries automatically filter by `BusinessId`.
+- **Global EF Core Query Filters**: Every tenant-owned entity implements `ITenantScoped`. All database queries automatically filter by `BusinessId`.
 - **SuperAdmin Governed Bypass**: Platform super-administrators have an audited, controlled capability to inspect tenants for support and billing administration without compromising logical boundary integrity.
 
 ---
 
-## ⚡ Core Business Modules
+## ⚡ Core Web Modules
 
-### 1. Multi-Tenant SaaS Engine & Super Admin Console
-- **Automated Self-Service Onboarding**: Atomic transactional registration of company, owner user, default branch, main counter, and default warehouse.
-- **Subscription Management**: Configurable tiers (Free Trial, Starter, Pro, Enterprise) with branch/counter quotas and feature gating.
-- **Platform Health & Metrics**: Real-time cross-platform revenue, active company counters, subscription renewal tracking, and audit logging.
-
-### 2. High-Speed Browser-Based Web POS
-- **Sub-Second Barcode Scanning**: USB HID scanner auto-detection with instant sound feedback and live cart updates.
-- **Multi-Tender Payments**: Cash, Debit/Credit Card, Bank Transfer, and Customer Credit (Udhaar).
-- **Cart Management**: Hold & resume orders, line discounts, cart percentage discounts, and walk-in customer quick selection.
-- **Thermal Receipt Printing**: Clean 80mm ESC/POS layout with printable barcodes, store header, tax breakdowns, and return policies.
-
-### 3. Inventory & Warehouse Logistics
-- **Multi-Warehouse Stock**: Dedicated stock balances per product and warehouse.
-- **Inter-Warehouse Transfers**: Stock movements between retail branches and distribution warehouses with dispatch/receive logging.
-- **Auditable Stock Adjustments**: Damage, shrinkage, and physical count corrections with historical audit trails.
-- **Barcode Label Printing**: Instant printable Code128 sheets with custom quantities and store branding.
-
-### 4. Shifts & Till Cash Reconciliation
-- **Session Control**: Cashier register opening float count, live session tracking, and blind closing reconciliation.
-- **X & Z Reports**: Detailed mid-shift audits and final end-of-day closing reports calculating expected cash and variances.
-
-### 5. Procurement & Supplier Accounts
-- **Purchase Orders & Goods Receiving**: Direct supplier purchase orders with automatic stock updating upon confirmation.
-- **Supplier Ledger**: Double-entry ledger recording purchases, payments, and running payable balances.
-
-### 6. Customer Udhaar (Credit Accounts)
-- **Credit Sales & Limits**: Restrict customer credit balances against configured credit ceilings.
-- **Customer Ledgers**: Chronological debit/credit history of purchases, partial cash payments, and due balance tracking.
-
-### 7. Executive Dashboard & Financial Analytics
-- **Live Financial Statistics**: Today's and monthly gross revenue, Cost of Goods Sold (COGS), gross margins, operational expenses, and net profit.
-- **Interactive Chart.js Visuals**: 7-day revenue trend curves, low-stock warnings, and payment method distribution charts.
+| Module | Web Route | Description |
+| :--- | :--- | :--- |
+| **Public Landing** | `/` | Marketing hero, key features showcase, pricing tiers, and contact form. |
+| **SaaS Onboarding** | `/Account/Register` | Atomic self-service tenant registration with default branch, counter, and warehouse creation. |
+| **Super Admin Console** | `/SuperAdmin` | Platform-wide company management, subscription tiers, platform settings, and audit logs. |
+| **Executive Dashboard** | `/Dashboard` | Real-time financial metrics (revenue, COGS, gross margin, expenses, net profit) with Chart.js trends. |
+| **Fast Web POS** | `/POS` | Sub-second barcode scanner listener, dynamic cart, split payments, hold/resume sales, and 80mm thermal receipts. |
+| **Product Catalog** | `/Products` | Product inventory, SKUs, brand/category associations, and printable Code128 barcode sheets. |
+| **Stock & Warehouses** | `/Inventory` | Multi-warehouse stock balances, inter-warehouse transfers, and auditable shrinkage/damage adjustments. |
+| **Till Shifts & Audits** | `/Shifts` | Opening float registration, blind cash counts, and printable mid-shift (X) & closing (Z) reports. |
+| **Purchasing & POs** | `/Purchases` | Supplier purchase orders with automatic stock updating into warehouses upon receipt. |
+| **Supplier Ledgers** | `/Suppliers` | Double-entry payables ledger tracking orders, payments, and running balances. |
+| **Customer Udhaar** | `/Customers` | Customer credit limits and chronological receivables ledger. |
+| **Expense Logs** | `/Expenses` | Daily operational and petty cash expense tracking per branch. |
+| **Subscription Portal** | `/Subscription` | Active plan status, renewal management, branch quotas, and plan upgrades. |
 
 ---
 
@@ -122,9 +168,9 @@ The database automatically seeds the following credentials upon first run:
 ### Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - Microsoft SQL Server 2022+ or SQL Server Express / LocalDB (`localhost`)
-- Visual Studio 2022/2026 / Visual Studio Code / JetBrains Rider
+- Visual Studio 2022 / Visual Studio Code / JetBrains Rider
 
-### 1. Database Connection
+### 1. Database Connection Configuration
 The application connects to SQL Server using the connection string in `src/SmartPOS.Web/appsettings.json`:
 ```json
 "ConnectionStrings": {
@@ -132,25 +178,27 @@ The application connects to SQL Server using the connection string in `src/Smart
 }
 ```
 
-Migrations and seed data are applied automatically on startup when the web application launches.
+> **Note:** Database migrations and pre-seeded sample data are applied automatically when the application starts up!
 
 ### 2. Build & Launch Web Application
+From the repository root:
 ```powershell
-# Build the unified web application
+# Build the application
 dotnet build
 
 # Launch the Web Application
 dotnet run --project src/SmartPOS.Web/SmartPOS.Web.csproj
 ```
-Access the application at `https://localhost:7196` or `http://localhost:5242`.
 
----
+Or change directory directly into the web project folder:
+```powershell
+cd src/SmartPOS.Web
+dotnet run
+```
 
-## 🧩 Solution Architecture (Single Self-Contained Web Project)
-
-| Project | Location | Description |
-| :--- | :--- | :--- |
-| **SmartPOS.Web** | [`src/SmartPOS.Web`](file:///c:/Users/Saim/Desktop/SMARTPOS%20ENTERPRISE/src/SmartPOS.Web) | Unified, self-contained ASP.NET Core 10 Web Application containing all Controllers, Views, Domain Entities, EF Core Migrations, Identity Auth, and POS Business Services in a single consolidated folder. |
+### 3. Open in Browser
+Once running, open your browser and navigate to:
+- **`https://localhost:7196`** or **`http://localhost:5242`**
 
 ---
 
