@@ -122,45 +122,35 @@ The database automatically seeds the following credentials upon first run:
 ### Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - Microsoft SQL Server 2022+ or SQL Server Express / LocalDB (`localhost`)
-- Visual Studio 2026 / Visual Studio Code / JetBrains Rider
+- Visual Studio 2022/2026 / Visual Studio Code / JetBrains Rider
 
-### 1. Database Setup & Migration
-The application connects to SQL Server using the connection string in `appsettings.json`:
+### 1. Database Connection
+The application connects to SQL Server using the connection string in `src/SmartPOS.Web/appsettings.json`:
 ```json
 "ConnectionStrings": {
   "DefaultConnection": "Server=localhost;Database=SmartPosEnterpriseDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
 }
 ```
 
-Migrations and seed data are applied automatically when the application starts, or you can apply manually:
-```powershell
-dotnet ef database update --project src/SmartPOS.Infrastructure/SmartPOS.Infrastructure.csproj --startup-project src/SmartPOS.Web/SmartPOS.Web.csproj
-```
+Migrations and seed data are applied automatically on startup when the web application launches.
 
-### 2. Run Automated Test Suite
+### 2. Build & Launch Web Application
 ```powershell
-dotnet test tests/SmartPOS.Tests/SmartPOS.Tests.csproj
-```
-*Result: 32/32 tests passing (`100% Passed`)*
+# Build the unified web application
+dotnet build
 
-### 3. Launch Web Application
-```powershell
+# Launch the Web Application
 dotnet run --project src/SmartPOS.Web/SmartPOS.Web.csproj
 ```
 Access the application at `https://localhost:7196` or `http://localhost:5242`.
 
 ---
 
-## 🧩 Solution Projects
+## 🧩 Solution Architecture (Single Self-Contained Web Project)
 
-| Project | Target | Description |
+| Project | Location | Description |
 | :--- | :--- | :--- |
-| [`src/SmartPOS.Domain`](file:///c:/Users/Saim/Desktop/SMARTPOS/src/SmartPOS.Domain) | .NET 10 | Enterprise domain entities, money calculation formulas, and value objects. |
-| [`src/SmartPOS.Application`](file:///c:/Users/Saim/Desktop/SMARTPOS/src/SmartPOS.Application) | .NET 10 | CQRS service contracts, DTOs, interfaces, and business workflows. |
-| [`src/SmartPOS.Infrastructure`](file:///c:/Users/Saim/Desktop/SMARTPOS/src/SmartPOS.Infrastructure) | .NET 10 | EF Core database mappings, SQL Server persistence, multi-tenant filters, and background services. |
-| [`src/SmartPOS.Web`](file:///c:/Users/Saim/Desktop/SMARTPOS/src/SmartPOS.Web) | .NET 10 MVC | Multi-tenant SaaS platform, Super Admin portal, web POS, and business modules. |
-| [`src/SmartPOS.API`](file:///c:/Users/Saim/Desktop/SMARTPOS/src/SmartPOS.API) | .NET 10 Web API | High-throughput REST API with JWT security, role-based access, and SignalR live hubs. |
-| [`tests/SmartPOS.Tests`](file:///c:/Users/Saim/Desktop/SMARTPOS/tests/SmartPOS.Tests) | .NET 10 xUnit | Automated test suite verifying multi-tenant isolation, financial ledgers, and inventory. |
+| **SmartPOS.Web** | [`src/SmartPOS.Web`](file:///c:/Users/Saim/Desktop/SMARTPOS%20ENTERPRISE/src/SmartPOS.Web) | Unified, self-contained ASP.NET Core 10 Web Application containing all Controllers, Views, Domain Entities, EF Core Migrations, Identity Auth, and POS Business Services in a single consolidated folder. |
 
 ---
 
