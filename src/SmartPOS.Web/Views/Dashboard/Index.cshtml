@@ -8,7 +8,7 @@
     <!-- Welcome Toast/Banner if fresh onboarding -->
     @if (Context.Request.Query["welcome"] == "true")
     {
-        <div class="alert alert-success border-0 rounded-4 p-4 mb-4 shadow d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(17, 24, 39, 0.95) 100%); border: 1px solid var(--emerald-border) !important;">
+        <div class="alert alert-success border-0 rounded-4 p-4 mb-4 shadow d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: var(--bg-card); border: 1px solid var(--emerald-border) !important;">
             <div class="d-flex align-items-center gap-3">
                 <span class="p-3 rounded-circle bg-emerald text-white fs-3"><i class="bi bi-patch-check-fill"></i></span>
                 <div>
@@ -257,12 +257,12 @@
             datasets: [{
                 label: 'Sales (@Model.CurrencyCode)',
                 data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesTrendAmounts)),
-                borderColor: '#10B981',
-                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                borderColor: '#16856B',
+                backgroundColor: 'rgba(22, 133, 107, 0.14)',
                 borderWidth: 2.5,
                 fill: true,
                 tension: 0.35,
-                pointBackgroundColor: '#10B981',
+                pointBackgroundColor: '#16856B',
                 pointRadius: 4
             }]
         },
@@ -271,8 +271,8 @@
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94A3B8' } },
-                y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94A3B8' } }
+                x: { grid: { color: 'rgba(217, 222, 217, 0.08)' }, ticks: { color: '#D9DED9' } },
+                y: { grid: { color: 'rgba(217, 222, 217, 0.08)' }, ticks: { color: '#D9DED9' } }
             }
         }
     });
@@ -286,7 +286,7 @@
             labels: Object.keys(payData),
             datasets: [{
                 data: Object.values(payData),
-                backgroundColor: ['#10B981', '#0EA5E9', '#F59E0B', '#6366F1', '#EC4899'],
+                backgroundColor: ['#16856B', '#D9DED9', '#3D4A48', '#F5F5F0', '#25302E'],
                 borderWidth: 0
             }]
         },
@@ -294,7 +294,7 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { color: '#94A3B8', boxWidth: 12 } }
+                legend: { position: 'bottom', labels: { color: '#D9DED9', boxWidth: 12 } }
             },
             cutout: '70%'
         }
