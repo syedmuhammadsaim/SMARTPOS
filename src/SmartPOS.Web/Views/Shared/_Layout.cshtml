@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,66 +28,77 @@
             --color-white: #FFFFFF;
             --color-light-grey: #D9DED9;
 
-            /* Bootstrap 5 Theme Overrides */
-            --bs-body-color: #F5F5F0;
-            --bs-body-bg: #171C1B;
-            --bs-secondary-color: #D9DED9;
-            --bs-tertiary-color: #D9DED9;
-            --bs-emphasis-color: #FFFFFF;
-            --bs-border-color: rgba(217, 222, 217, 0.16);
+            /* Bootstrap 5 Theme Overrides for Pure White Background */
+            --bs-body-color: #171C1B;
+            --bs-body-bg: #FFFFFF;
+            --bs-secondary-color: #4B5563;
+            --bs-tertiary-color: #6B7280;
+            --bs-emphasis-color: #171C1B;
+            --bs-border-color: #D9DED9;
             --bs-link-color: #16856B;
             --bs-link-hover-color: #126E58;
 
             /* Semantic UI Surfaces */
-            --bg-base: #171C1B;
-            --bg-surface: #1E2423;
-            --bg-card: #222928;
-            --bg-card-hover: #293231;
-            --bg-header: #121615;
-            --bg-footer: #121615;
+            --bg-base: #FFFFFF;
+            --bg-surface: #F5F5F0;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #F8F9F8;
+            --bg-header: #FFFFFF;
+            --bg-footer: #F5F5F0;
 
             /* Semantic Borders */
-            --border-subtle: rgba(217, 222, 217, 0.14);
-            --border-hover: rgba(217, 222, 217, 0.28);
+            --border-subtle: #D9DED9;
+            --border-hover: #B8BFB8;
             --border-focus: #16856B;
 
-            /* Semantic Typography */
-            --text-primary: #F5F5F0;
-            --text-secondary: #D9DED9;
-            --text-muted: #D9DED9;
+            /* Semantic Typography (High-Contrast Charcoal) */
+            --text-primary: #171C1B;
+            --text-secondary: #4B5563;
+            --text-muted: #6B7280;
 
             /* Emerald Green Variants */
             --emerald: #16856B;
             --emerald-hover: #126E58;
-            --emerald-subtle: rgba(22, 133, 107, 0.14);
+            --emerald-subtle: rgba(22, 133, 107, 0.08);
             --emerald-border: rgba(22, 133, 107, 0.35);
-            --emerald-glow: rgba(22, 133, 107, 0.2);
+            --emerald-glow: rgba(22, 133, 107, 0.15);
 
-            /* Restrained Functional Status (No Purple, No Bright Blue) */
+            /* Restrained Functional Status */
             --warning: #D97706;
-            --warning-subtle: rgba(217, 119, 6, 0.15);
+            --warning-subtle: rgba(217, 119, 6, 0.1);
             --danger: #DC2626;
-            --danger-subtle: rgba(220, 38, 38, 0.15);
+            --danger-subtle: rgba(220, 38, 38, 0.1);
             --info: #16856B;
-            --info-subtle: rgba(22, 133, 107, 0.14);
+            --info-subtle: rgba(22, 133, 107, 0.08);
         }
 
-        /* High-Contrast Global Typography */
+        /* High-Contrast Global Typography - Deep Charcoal on Pure White */
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #FFFFFF !important;
+            color: #171C1B !important;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
         body, p, span, div, li, td, th, label, input, select, textarea {
-            color: #F5F5F0;
+            color: #171C1B;
         }
 
-        h1, h2, h3, h4, h5, h6, .text-white, .text-light, strong, b {
-            color: #FFFFFF !important;
+        h1, h2, h3, h4, h5, h6, strong, b {
+            color: #171C1B !important;
+            font-weight: 700;
         }
 
+        /* High-contrast secondary and muted text */
         .text-secondary, .text-muted, small.text-muted, div.text-muted, p.text-muted, span.text-muted {
-            color: #D9DED9 !important;
+            color: #4B5563 !important;
             opacity: 1 !important;
         }
 
         .text-primary, .text-primary-custom {
-            color: #F5F5F0 !important;
+            color: #171C1B !important;
         }
 
         .text-emerald {
@@ -95,17 +106,18 @@
         }
 
         .form-label, label {
-            color: #D9DED9 !important;
-            font-weight: 500;
+            color: #171C1B !important;
+            font-weight: 600;
         }
 
-        body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-base);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        /* Prevent any unintended light/white text on pure white background */
+        main .text-light, main .text-white:not(.btn-emerald):not(.bg-emerald):not(.badge.bg-emerald),
+        section .text-light, section .text-white:not(.btn-emerald):not(.bg-emerald):not(.badge.bg-emerald),
+        .card .text-light, .card .text-white:not(.btn-emerald):not(.bg-emerald):not(.badge.bg-emerald),
+        .card-stat .text-light, .card-stat .text-white:not(.btn-emerald):not(.bg-emerald):not(.badge.bg-emerald),
+        .table .text-light, .table .text-white:not(.btn-emerald):not(.bg-emerald):not(.badge.bg-emerald),
+        .modal .text-light, .modal .text-white:not(.btn-emerald):not(.bg-emerald):not(.badge.bg-emerald) {
+            color: #171C1B !important;
         }
 
         .mono {
@@ -114,8 +126,8 @@
 
         .text-primary-custom { color: var(--text-primary) !important; }
         .text-secondary-custom { color: var(--text-secondary) !important; }
-        .text-light-grey { color: var(--color-light-grey) !important; }
-        .text-warm-white { color: var(--color-warm-white) !important; }
+        .text-light-grey { color: #4B5563 !important; }
+        .text-warm-white { color: #171C1B !important; }
 
         .bg-surface { background-color: var(--bg-surface) !important; }
         .bg-card { background-color: var(--bg-card) !important; }
@@ -123,7 +135,7 @@
         
         .text-emerald { color: var(--emerald) !important; }
         .bg-emerald { background-color: var(--emerald) !important; color: #FFFFFF !important; }
-        .bg-emerald-subtle { background-color: var(--emerald-subtle) !important; color: var(--color-warm-white) !important; }
+        .bg-emerald-subtle { background-color: var(--emerald-subtle) !important; color: var(--emerald) !important; font-weight: 600; }
         .border-emerald { border-color: var(--emerald-border) !important; }
 
         .btn-emerald {
@@ -146,24 +158,26 @@
             background-color: transparent;
             color: var(--emerald) !important;
             border: 1px solid var(--emerald);
+            font-weight: 600;
             transition: all 0.15s ease-in-out;
         }
         .btn-outline-emerald:hover {
             background-color: var(--emerald-subtle);
-            color: #FFFFFF !important;
+            color: var(--emerald) !important;
             border-color: var(--emerald);
         }
 
         .btn-outline-light {
-            background-color: transparent;
-            color: var(--color-warm-white) !important;
+            background-color: #FFFFFF;
+            color: #171C1B !important;
             border: 1px solid var(--border-subtle);
+            font-weight: 500;
             transition: all 0.15s ease-in-out;
         }
         .btn-outline-light:hover {
-            background-color: rgba(217, 222, 217, 0.08);
-            color: #FFFFFF !important;
-            border-color: var(--border-hover);
+            background-color: #F5F5F0;
+            color: #16856B !important;
+            border-color: #16856B;
         }
 
         .btn-modern-primary {
@@ -180,48 +194,49 @@
 
         /* Form Controls */
         .form-control, .form-select {
-            background-color: var(--bg-surface) !important;
-            color: var(--text-primary) !important;
+            background-color: #FFFFFF !important;
+            color: #171C1B !important;
             border: 1px solid var(--border-subtle) !important;
             border-radius: 8px;
         }
         .form-control:focus, .form-select:focus {
-            background-color: var(--bg-surface) !important;
-            color: var(--text-primary) !important;
+            background-color: #FFFFFF !important;
+            color: #171C1B !important;
             border-color: var(--emerald) !important;
-            box-shadow: 0 0 0 0.2rem rgba(22, 133, 107, 0.25) !important;
+            box-shadow: 0 0 0 0.2rem rgba(22, 133, 107, 0.2) !important;
         }
         .form-control::placeholder {
-            color: var(--text-muted) !important;
+            color: #9CA3AF !important;
         }
         .input-group-text {
-            background-color: var(--bg-surface) !important;
-            color: var(--text-secondary) !important;
+            background-color: #F5F5F0 !important;
+            color: #171C1B !important;
             border: 1px solid var(--border-subtle) !important;
         }
 
-        /* Top Header Navbar */
+        /* Top Header Navbar - Pure White with Crisp Border */
         .navbar-custom {
-            background: var(--bg-header);
+            background: #FFFFFF;
             border-bottom: 1px solid var(--border-subtle);
             padding: 0.75rem 1.5rem;
             position: sticky;
             top: 0;
             z-index: 1030;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
         .navbar-brand {
             font-weight: 800;
             font-size: 1.25rem;
             letter-spacing: -0.02em;
-            color: #FFFFFF;
+            color: #171C1B !important;
             display: flex;
             align-items: center;
             gap: 0.6rem;
         }
 
         .nav-link {
-            color: var(--text-secondary) !important;
+            color: #171C1B !important;
             font-weight: 500;
             font-size: 0.88rem;
             padding: 0.5rem 0.85rem !important;
@@ -233,24 +248,35 @@
         }
 
         .nav-link:hover, .nav-link.active {
-            color: #FFFFFF !important;
-            background: rgba(217, 222, 217, 0.08);
+            color: #16856B !important;
+            background: rgba(22, 133, 107, 0.08);
         }
 
-        .card-stat, .glass-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
+        .card, .card-stat, .glass-card {
+            background-color: #FFFFFF !important;
+            border: 1px solid var(--border-subtle) !important;
             border-radius: 12px;
-            padding: 1.35rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
             transition: all 0.15s ease;
         }
-        .card-stat:hover, .glass-card:hover {
-            border-color: var(--border-hover);
+        .card-stat {
+            padding: 1.35rem;
+        }
+        .card:hover, .card-stat:hover, .glass-card:hover {
+            border-color: var(--emerald) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-header {
+            background-color: #F5F5F0 !important;
+            border-bottom: 1px solid var(--border-subtle) !important;
+            color: #171C1B !important;
+            font-weight: 600;
         }
 
         .table-custom {
-            --bs-table-bg: transparent;
-            --bs-table-color: var(--text-primary);
+            --bs-table-bg: #FFFFFF;
+            --bs-table-color: #171C1B;
             --bs-table-border-color: var(--border-subtle);
             border-collapse: separate;
             border-spacing: 0;
@@ -259,75 +285,75 @@
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: var(--color-light-grey);
-            font-weight: 600;
-            border-bottom: 1px solid var(--border-subtle);
+            color: #171C1B;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-subtle);
             padding: 0.75rem 1rem;
-            background-color: var(--bg-surface);
+            background-color: #F5F5F0;
         }
         .table-custom td {
             font-size: 0.88rem;
             padding: 0.85rem 1rem;
             border-bottom: 1px solid var(--border-subtle);
             vertical-align: middle;
-            color: var(--color-warm-white);
+            color: #171C1B;
+            background-color: #FFFFFF;
         }
-        .table-custom tbody tr:hover {
-            background-color: rgba(217, 222, 217, 0.04);
+        .table-custom tbody tr:hover td {
+            background-color: rgba(22, 133, 107, 0.04);
         }
 
-        .dropdown-menu-dark-custom {
-            background-color: var(--bg-surface);
+        .dropdown-menu-dark-custom, .dropdown-menu {
+            background-color: #FFFFFF;
             border: 1px solid var(--border-subtle);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
             border-radius: 12px;
             padding: 0.5rem;
         }
-        .dropdown-menu-dark-custom .dropdown-item {
-            color: var(--text-secondary);
+        .dropdown-menu-dark-custom .dropdown-item, .dropdown-menu .dropdown-item {
+            color: #171C1B;
             border-radius: 6px;
             padding: 0.55rem 0.85rem;
             font-size: 0.88rem;
         }
-        .dropdown-menu-dark-custom .dropdown-item:hover {
-            color: #FFFFFF;
-            background-color: rgba(217, 222, 217, 0.08);
+        .dropdown-menu-dark-custom .dropdown-item:hover, .dropdown-menu .dropdown-item:hover {
+            color: #16856B;
+            background-color: rgba(22, 133, 107, 0.08);
         }
 
         /* Accordion overrides */
         .accordion-button {
-            background-color: var(--bg-card) !important;
-            color: var(--color-warm-white) !important;
+            background-color: #FFFFFF !important;
+            color: #171C1B !important;
             box-shadow: none !important;
         }
         .accordion-button:not(.collapsed) {
-            background-color: var(--bg-card-hover) !important;
+            background-color: rgba(22, 133, 107, 0.08) !important;
             color: var(--emerald) !important;
-        }
-        .accordion-button::after {
-            filter: invert(1) grayscale(100%);
         }
 
         /* Modal Overrides */
         .modal-content {
-            background-color: var(--bg-card) !important;
+            background-color: #FFFFFF !important;
             border: 1px solid var(--border-subtle) !important;
-            color: var(--text-primary) !important;
+            color: #171C1B !important;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12) !important;
         }
         .modal-header, .modal-footer {
             border-color: var(--border-subtle) !important;
+            background-color: #F5F5F0;
         }
 
         /* Alert Overrides */
         .alert-success {
-            background-color: var(--emerald-subtle) !important;
+            background-color: rgba(22, 133, 107, 0.08) !important;
             border-color: var(--emerald-border) !important;
-            color: var(--color-warm-white) !important;
+            color: #171C1B !important;
         }
         .alert-danger {
-            background-color: var(--danger-subtle) !important;
-            border-color: rgba(220, 38, 38, 0.35) !important;
-            color: var(--color-warm-white) !important;
+            background-color: rgba(220, 38, 38, 0.08) !important;
+            border-color: rgba(220, 38, 38, 0.25) !important;
+            color: #171C1B !important;
         }
 
         /* Modern badge mappings */
@@ -340,11 +366,11 @@
             font-weight: 600;
             border-radius: 9999px;
             border: 1px solid var(--border-subtle);
-            background-color: var(--bg-surface);
-            color: var(--color-warm-white);
+            background-color: #F5F5F0;
+            color: #171C1B;
         }
         .badge-indigo, .badge-cyan {
-            background-color: var(--emerald-subtle) !important;
+            background-color: rgba(22, 133, 107, 0.08) !important;
             color: var(--emerald) !important;
             border-color: var(--emerald-border) !important;
         }
@@ -364,7 +390,7 @@
                     </span>
                     <span>SMARTPOS <span class="badge bg-emerald-subtle text-emerald border border-emerald fs-7 ms-1">ENTERPRISE</span></span>
                 </a>
-                <button class="navbar-toggler border-subtle text-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <button class="navbar-toggler border-subtle text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <i class="bi bi-list fs-3"></i>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarMain">
@@ -407,7 +433,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-white fw-bold" asp-controller="POS" asp-action="Index" style="background: var(--emerald-subtle); border-radius: 8px;">
+                                    <a class="nav-link text-emerald fw-bold" asp-controller="POS" asp-action="Index" style="background: var(--emerald-subtle); border-radius: 8px;">
                                         <i class="bi bi-cart-check-fill text-emerald"></i> POS Billing
                                     </a>
                                 </li>
@@ -490,7 +516,7 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-dark-custom dropdown-menu-end mt-2">
                                     <li class="px-3 py-2 border-bottom border-subtle">
-                                        <div class="small fw-bold text-light">@(User.FindFirst("FullName")?.Value ?? User.Identity.Name)</div>
+                                        <div class="small fw-bold text-dark">@(User.FindFirst("FullName")?.Value ?? User.Identity.Name)</div>
                                         <div class="text-muted" style="font-size: 0.75rem;">@User.Identity.Name</div>
                                     </li>
                                     @if (!User.IsInRole("SuperAdmin"))
@@ -536,7 +562,7 @@
                         <span class="d-inline-flex p-1 rounded bg-emerald text-white" style="width: 20px; height: 20px; font-size: 0.65rem; align-items: center; justify-content: center;">
                             <i class="bi bi-cpu-fill"></i>
                         </span>
-                        <span class="fw-bold text-light">SMARTPOS ENTERPRISE</span>
+                        <span class="fw-bold text-dark">SMARTPOS ENTERPRISE</span>
                         <span class="text-muted small">| One Platform. Multiple Businesses. Complete Business Control.</span>
                     </div>
                     <div class="text-muted small">&copy; @DateTime.UtcNow.Year SMARTPOS. Multi-Tenant Enterprise SaaS Platform. All rights reserved.</div>

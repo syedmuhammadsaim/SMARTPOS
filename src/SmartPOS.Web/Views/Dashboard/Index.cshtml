@@ -271,8 +271,8 @@
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                x: { grid: { color: 'rgba(217, 222, 217, 0.08)' }, ticks: { color: '#D9DED9' } },
-                y: { grid: { color: 'rgba(217, 222, 217, 0.08)' }, ticks: { color: '#D9DED9' } }
+                x: { grid: { color: 'rgba(217, 222, 217, 0.4)' }, ticks: { color: '#171C1B' } },
+                y: { grid: { color: 'rgba(217, 222, 217, 0.4)' }, ticks: { color: '#171C1B' } }
             }
         }
     });
@@ -286,15 +286,16 @@
             labels: Object.keys(payData),
             datasets: [{
                 data: Object.values(payData),
-                backgroundColor: ['#16856B', '#D9DED9', '#3D4A48', '#F5F5F0', '#25302E'],
-                borderWidth: 0
+                backgroundColor: ['#16856B', '#171C1B', '#3D4A48', '#8B9B8B', '#D9DED9'],
+                borderWidth: 1,
+                borderColor: '#FFFFFF'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { color: '#D9DED9', boxWidth: 12 } }
+                legend: { position: 'bottom', labels: { color: '#171C1B', boxWidth: 12 } }
             },
             cutout: '70%'
         }

@@ -2,12 +2,12 @@
 /* Official Palette: Charcoal #171C1B, Emerald Green #16856B, Warm White #F5F5F0, White #FFFFFF, Light Grey #D9DED9 */
 
 :root {
-  --bs-body-color: #F5F5F0;
-  --bs-body-bg: #171C1B;
-  --bs-secondary-color: #D9DED9;
-  --bs-tertiary-color: #D9DED9;
-  --bs-emphasis-color: #FFFFFF;
-  --bs-border-color: rgba(217, 222, 217, 0.16);
+  --bs-body-color: #171C1B;
+  --bs-body-bg: #FFFFFF;
+  --bs-secondary-color: #4B5563;
+  --bs-tertiary-color: #6B7280;
+  --bs-emphasis-color: #171C1B;
+  --bs-border-color: #D9DED9;
   --bs-link-color: #16856B;
   --bs-link-hover-color: #126E58;
 }
@@ -16,7 +16,7 @@ html {
   font-size: 14px;
   position: relative;
   min-height: 100%;
-  background-color: #171C1B;
+  background-color: #FFFFFF;
 }
 
 @media (min-width: 768px) {
@@ -26,26 +26,26 @@ html {
 }
 
 body {
-  background-color: #171C1B;
-  color: #F5F5F0;
+  background-color: #FFFFFF;
+  color: #171C1B;
 }
 
-/* Ensure all text is bright and crystal clear */
+/* Ensure all text is crisp, high-contrast Charcoal and crystal clear */
 body, p, span, div, li, td, th, label, input, select, textarea {
-  color: #F5F5F0;
+  color: #171C1B;
 }
 
-h1, h2, h3, h4, h5, h6, .text-white, .text-light, strong, b {
-  color: #FFFFFF !important;
+h1, h2, h3, h4, h5, h6, strong, b {
+  color: #171C1B !important;
 }
 
 .text-secondary, .text-muted, small.text-muted, div.text-muted, p.text-muted, span.text-muted {
-  color: #D9DED9 !important;
+  color: #4B5563 !important;
   opacity: 1 !important;
 }
 
 .text-primary, .text-primary-custom {
-  color: #F5F5F0 !important;
+  color: #171C1B !important;
 }
 
 .text-emerald {
@@ -53,14 +53,14 @@ h1, h2, h3, h4, h5, h6, .text-white, .text-light, strong, b {
 }
 
 .form-label, label {
-  color: #D9DED9 !important;
-  font-weight: 500;
+  color: #171C1B !important;
+  font-weight: 600;
 }
 
 /* Eliminate blue focus rings - use Emerald #16856B */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-select:focus, .form-check-input:focus {
   outline: none !important;
-  box-shadow: 0 0 0 0.2rem rgba(22, 133, 107, 0.25) !important;
+  box-shadow: 0 0 0 0.2rem rgba(22, 133, 107, 0.2) !important;
   border-color: #16856B !important;
 }
 
@@ -70,16 +70,16 @@ h1, h2, h3, h4, h5, h6, .text-white, .text-light, strong, b {
   border-color: #16856B;
 }
 
-/* Scrollbars customized to Charcoal & Light Grey */
+/* Scrollbars customized to Light Grey & Emerald */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #171C1B;
+  background: #F5F5F0;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(217, 222, 217, 0.25);
+  background: #D9DED9;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
