@@ -1,0 +1,556 @@
+@model List<SmartPOS.Domain.Entities.Catalog.Product>
+@{
+    ViewData["Title"] = "POS Terminal - SMARTPOS ENTERPRISE";
+    Layout = "_Layout";
+    var business = ViewBag.Business as SmartPOS.Domain.Entities.Organization.Business;
+    var currency = ViewBag.Currency as string ?? "PKR";
+    var categories = ViewBag.Categories as List<SmartPOS.Domain.Entities.Catalog.Category> ?? new();
+    var paymentMethods = ViewBag.PaymentMethods as List<SmartPOS.Domain.Entities.Sales.PaymentMethod> ?? new();
+    var customers = ViewBag.Customers as List<SmartPOS.Domain.Entities.Customers.Customer> ?? new();
+    var activeSession = ViewBag.ActiveSession as SmartPOS.Domain.Entities.ShiftsAndSessions.CounterSession;
+    var stockMap = ViewBag.StockMap as Dictionary<Guid, decimal> ?? new();
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container-fluid px-2 px-md-3 py-2 flex-grow-1 d-flex flex-column" style="min-height: calc(100vh - 120px);">
+    <div class="row g-2 flex-grow-1">
+        <!-- LEFT PANE: Search, Category Filter, and Product Grid -->
+        <div class="col-lg-7 col-xl-8 d-flex flex-column">
+            <!-- POS Top Bar -->
+            <div class="card bg-card border-subtle rounded-3 p-2 mb-2">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-7">
+                        <div class="input-group">
+                            <span class="input-group-text bg-surface border-subtle text-emerald"><i class="bi bi-upc-scan fs-5"></i></span>
+                            <input type="text" id="barcodeScannerInput" class="form-control form-control-lg bg-surface border-subtle text-light fw-semibold" placeholder="Scan barcode with USB scanner or type SKU / Name..." autofocus autocomplete="off" />
+                            <button class="btn btn-outline-light border-subtle" type="button" id="btnClearSearch"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-5 d-flex justify-content-end align-items-center gap-2">
+                        <div class="small text-secondary">
+                            <span class="badge bg-surface border border-subtle"><i class="bi bi-display text-emerald me-1"></i> Counter 01</span>
+                            <span class="badge bg-emerald-subtle text-emerald border border-emerald ms-1"><i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Till Active</span>
+                        </div>
+                        <button class="btn btn-outline-warning border-subtle btn-sm px-2" id="btnViewHeldBills" title="View Parked Sales">
+                            <i class="bi bi-pause-circle me-1"></i> Parked (<span id="heldBillsCount">0</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category Quick Filters -->
+                <div class="d-flex gap-1 overflow-x-auto pt-2 pb-1" id="categoryPills">
+                    <button class="btn btn-sm btn-emerald px-3 rounded-pill category-filter active" data-category-id="">All Items</button>
+                    @foreach (var cat in categories)
+                    {
+                        <button class="btn btn-sm btn-outline-light border-subtle px-3 rounded-pill category-filter text-nowrap" data-category-id="@cat.Id">@cat.Name</button>
+                    }
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="card bg-card border-subtle rounded-3 p-2 flex-grow-1 overflow-y-auto" style="max-height: 70vh;">
+                <div class="row g-2" id="productGrid">
+                    @foreach (var p in Model)
+                    {
+                        var stock = stockMap.TryGetValue(p.Id, out var s) ? s : 0m;
+                        var barcode = p.Barcodes.FirstOrDefault(b => b.IsPrimary)?.Barcode ?? p.Barcodes.FirstOrDefault()?.Barcode ?? p.Sku;
+                        <div class="col-6 col-md-4 col-xl-3 product-card-col" data-category="@p.CategoryId" data-name="@p.Name.ToLower()" data-sku="@p.Sku.ToLower()" data-barcode="@barcode.ToLower()">
+                            <div class="card h-100 bg-surface border-subtle rounded-3 p-2 cursor-pointer product-card transition-all" 
+                                 onclick="addToCart('@p.Id', '@Html.Raw(Html.Encode(p.Name))', @p.SalePrice, '@barcode')">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <span class="badge bg-card text-muted mono" style="font-size: 0.65rem;">@p.Sku</span>
+                                    <span class="badge @(stock > 5 ? "bg-emerald-subtle text-emerald" : "bg-warning-subtle text-warning")" style="font-size: 0.65rem;">
+                                        @stock.ToString("N0") in stock
+                                    </span>
+                                </div>
+                                <div class="fw-bold text-light text-truncate mb-2" title="@p.Name" style="font-size: 0.88rem;">@p.Name</div>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <span class="fs-6 fw-bold text-emerald">@currency @p.SalePrice.ToString("N0")</span>
+                                    <span class="btn btn-emerald btn-sm py-0 px-2 rounded"><i class="bi bi-plus-lg"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANE: Cart & Checkout -->
+        <div class="col-lg-5 col-xl-4 d-flex flex-column">
+            <div class="card bg-card border-subtle rounded-3 p-3 flex-grow-1 d-flex flex-column shadow-sm">
+                <!-- Customer Selection -->
+                <div class="mb-2">
+                    <label class="form-label small text-muted mb-1 fw-semibold"><i class="bi bi-person me-1 text-emerald"></i> Customer</label>
+                    <select id="cartCustomerId" class="form-select form-select-sm bg-surface border-subtle text-light">
+                        <option value="">Walk-in Retail Customer</option>
+                        @foreach (var c in customers)
+                        {
+                            <option value="@c.Id">@c.Name (@(c.Phone ?? "No Phone")) - Bal: @currency @c.CurrentBalance.ToString("N0")</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Cart Items Table -->
+                <div class="table-responsive flex-grow-1 overflow-y-auto mb-2 border-top border-bottom border-subtle" style="min-height: 250px; max-height: 38vh;">
+                    <table class="table table-custom mb-0" id="cartTable">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-center" style="width: 100px;">Qty</th>
+                                <th class="text-end">Price</th>
+                                <th class="text-end">Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartTableBody">
+                            <tr id="emptyCartRow">
+                                <td colspan="5" class="text-center text-muted py-5">
+                                    <i class="bi bi-cart3 fs-1 text-muted d-block mb-2"></i>
+                                    Cart is empty. Scan barcode or tap items to add.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Financial Calculation Summary -->
+                <div class="p-2 rounded bg-surface border border-subtle mb-3">
+                    <div class="d-flex justify-content-between small text-secondary mb-1">
+                        <span>Subtotal</span>
+                        <span id="lblSubtotal">@currency 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-secondary mb-1">
+                        <span>Discount</span>
+                        <span class="text-emerald" id="lblDiscount">- @currency 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-secondary mb-2">
+                        <span>Tax (Calculated)</span>
+                        <span id="lblTax">@currency 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top border-subtle">
+                        <span class="fw-bold text-light fs-5">Grand Total</span>
+                        <span class="fw-extrabold text-emerald fs-4 mono" id="lblGrandTotal">@currency 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="row g-2">
+                    <div class="col-6">
+                        <button class="btn btn-outline-danger border-subtle btn-sm w-100 py-2 rounded-2" onclick="clearCart()">
+                            <i class="bi bi-trash3 me-1"></i> Clear Cart
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-warning border-subtle btn-sm w-100 py-2 rounded-2" onclick="parkBillModal()">
+                            <i class="bi bi-pause-circle me-1"></i> Park Sale
+                        </button>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-emerald btn-lg w-100 py-3 fw-bold rounded-3 shadow" id="btnPay" onclick="openPaymentModal()" disabled>
+                            <i class="bi bi-cash-stack me-2"></i> PAY & CHECKOUT [F2]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-card border-subtle text-light shadow-lg">
+            <div class="modal-header border-subtle">
+                <h5 class="modal-title fw-bold"><i class="bi bi-credit-card-2-front text-emerald me-2"></i> Process Sale Payment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6 border-end border-subtle">
+                        <div class="p-3 rounded bg-surface border border-subtle text-center mb-3">
+                            <span class="text-muted small text-uppercase">Net Total Amount Due</span>
+                            <div class="display-6 fw-bold text-emerald mono" id="payModalTotalDue">@currency 0.00</div>
+                        </div>
+
+                        <!-- Tendered Cash Input -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Tendered Cash Amount</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-surface border-subtle text-muted">@currency</span>
+                                <input type="number" step="1" id="tenderedCashInput" class="form-control bg-surface border-subtle text-light fw-bold fs-4 mono" oninput="calculateChange()" autofocus />
+                            </div>
+                        </div>
+
+                        <!-- Quick Cash Note Buttons -->
+                        <div class="d-flex gap-2 flex-wrap mb-3">
+                            <button class="btn btn-sm btn-outline-light border-subtle px-2" onclick="setTenderedExact()">Exact</button>
+                            <button class="btn btn-sm btn-outline-light border-subtle px-2" onclick="addTendered(100)">+100</button>
+                            <button class="btn btn-sm btn-outline-light border-subtle px-2" onclick="addTendered(500)">+500</button>
+                            <button class="btn btn-sm btn-outline-light border-subtle px-2" onclick="addTendered(1000)">+1000</button>
+                            <button class="btn btn-sm btn-outline-light border-subtle px-2" onclick="addTendered(5000)">+5000</button>
+                        </div>
+
+                        <!-- Change Returned -->
+                        <div class="p-3 rounded bg-surface border border-subtle text-center">
+                            <span class="text-muted small text-uppercase">Change to Return</span>
+                            <div class="fs-3 fw-bold text-info mono" id="payModalChange">@currency 0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-light mb-3">Select Payment Method</h6>
+                        <div class="d-flex flex-column gap-2 mb-3">
+                            @foreach (var pm in paymentMethods)
+                            {
+                                <label class="p-3 rounded bg-surface border border-subtle d-flex align-items-center justify-content-between cursor-pointer payment-method-opt">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="radio" name="selectedPaymentMethod" value="@pm.Id" class="form-check-input" @(pm.Type == SmartPOS.Domain.Enums.PaymentMethodType.Cash ? "checked" : "") />
+                                        <span class="fw-semibold text-light">@pm.Name</span>
+                                    </div>
+                                    <span class="badge bg-card text-muted">@pm.Type</span>
+                                </label>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Transaction / Card / Approval Reference (Optional)</label>
+                            <input type="text" id="payReferenceNo" class="form-control bg-surface border-subtle text-light" placeholder="e.g. Card slip no, Txn Ref" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-subtle">
+                <button type="button" class="btn btn-outline-light border-subtle" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-emerald btn-lg px-4 fw-bold" id="btnSubmitPayment" onclick="submitSaleOrder()">
+                    <i class="bi bi-check-circle-fill me-2"></i> Complete Sale & Print Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SUCCESS RECEIPT MODAL -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content bg-card border-subtle text-light text-center p-4 rounded-4 shadow-lg">
+            <div class="text-emerald fs-1 mb-2">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <h4 class="fw-bold text-white mb-1">Sale Completed!</h4>
+            <div class="badge bg-surface border border-subtle mono fs-6 mb-3" id="successInvoiceNo">INV-XXXX</div>
+            <div class="text-muted small mb-4">Transaction recorded. Inventory deducted in real time.</div>
+
+            <div class="d-flex flex-column gap-2">
+                <a href="#" id="lnkViewThermalReceipt" target="_blank" class="btn btn-emerald fw-semibold py-2 rounded-3">
+                    <i class="bi bi-printer me-2"></i> Print 80mm Receipt
+                </a>
+                <button type="button" class="btn btn-outline-light border-subtle py-2 rounded-3" data-bs-dismiss="modal" onclick="resetForNewSale()">
+                    New Transaction (Esc)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let cart = [];
+    const activeSessionId = '@(activeSession?.Id ?? Guid.Empty)';
+    const activeBranchId = '@(ViewBag.ActiveBranchId ?? Guid.Empty)';
+    const activeCounterId = '@(ViewBag.ActiveCounterId ?? Guid.Empty)';
+    const currency = '@currency';
+
+    // USB HID Barcode Scanner Listener
+    let barcodeBuffer = '';
+    let lastKeyTime = Date.now();
+
+    document.addEventListener('keydown', function (e) {
+        // F2 triggers payment modal
+        if (e.key === 'F2') {
+            e.preventDefault();
+            if (cart.length > 0) openPaymentModal();
+            return;
+        }
+
+        // Keystroke timing for USB HID scanners (hardware barcode scanners type very rapidly < 50ms per key)
+        const now = Date.now();
+        if (now - lastKeyTime > 100) {
+            barcodeBuffer = '';
+        }
+        lastKeyTime = now;
+
+        if (e.key === 'Enter') {
+            const input = document.getElementById('barcodeScannerInput');
+            if (document.activeElement === input && input.value.trim().length > 0) {
+                lookupAndAddBarcode(input.value.trim());
+                input.value = '';
+                e.preventDefault();
+            } else if (barcodeBuffer.length >= 3) {
+                lookupAndAddBarcode(barcodeBuffer.trim());
+                barcodeBuffer = '';
+                e.preventDefault();
+            }
+        } else if (e.key.length === 1) {
+            barcodeBuffer += e.key;
+        }
+    });
+
+    // Barcode Lookup AJAX
+    async function lookupAndAddBarcode(code) {
+        try {
+            const res = await fetch(`/POS/SearchProducts?query=${encodeURIComponent(code)}`);
+            const items = await res.json();
+            if (items && items.length > 0) {
+                const item = items[0];
+                addToCart(item.id, item.name, item.price, item.barcode);
+            } else {
+                console.log("No product matched barcode:", code);
+            }
+        } catch (err) {
+            console.error("Barcode lookup error:", err);
+        }
+    }
+
+    // Category filter pills
+    document.querySelectorAll('.category-filter').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.category-filter').forEach(b => b.classList.remove('active', 'btn-emerald'));
+            document.querySelectorAll('.category-filter').forEach(b => b.classList.add('btn-outline-light'));
+            this.classList.add('active', 'btn-emerald');
+            this.classList.remove('btn-outline-light');
+
+            const catId = this.getAttribute('data-category-id');
+            document.querySelectorAll('.product-card-col').forEach(col => {
+                if (!catId || col.getAttribute('data-category') === catId) {
+                    col.style.display = '';
+                } else {
+                    col.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Search bar filter
+    document.getElementById('barcodeScannerInput').addEventListener('input', function () {
+        const val = this.value.trim().toLowerCase();
+        document.querySelectorAll('.product-card-col').forEach(col => {
+            const name = col.getAttribute('data-name');
+            const sku = col.getAttribute('data-sku');
+            const barcode = col.getAttribute('data-barcode');
+            if (!val || name.includes(val) || sku.includes(val) || barcode.includes(val)) {
+                col.style.display = '';
+            } else {
+                col.style.display = 'none';
+            }
+        });
+    });
+
+    document.getElementById('btnClearSearch').addEventListener('click', function () {
+        document.getElementById('barcodeScannerInput').value = '';
+        document.querySelectorAll('.product-card-col').forEach(c => c.style.display = '');
+    });
+
+    // Cart Management
+    function addToCart(productId, name, price, barcode) {
+        const existing = cart.find(i => i.productId === productId);
+        if (existing) {
+            existing.qty += 1;
+        } else {
+            cart.push({
+                productId: productId,
+                name: name,
+                price: parseFloat(price),
+                qty: 1,
+                discount: 0
+            });
+        }
+        renderCart();
+    }
+
+    function updateQty(productId, delta) {
+        const item = cart.find(i => i.productId === productId);
+        if (item) {
+            item.qty += delta;
+            if (item.qty <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+            renderCart();
+        }
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(i => i.productId !== productId);
+        renderCart();
+    }
+
+    function clearCart() {
+        cart = [];
+        renderCart();
+    }
+
+    function renderCart() {
+        const tbody = document.getElementById('cartTableBody');
+        tbody.innerHTML = '';
+
+        if (cart.length === 0) {
+            tbody.innerHTML = `
+                <tr id="emptyCartRow">
+                    <td colspan="5" class="text-center text-muted py-5">
+                        <i class="bi bi-cart3 fs-1 text-muted d-block mb-2"></i>
+                        Cart is empty. Scan barcode or tap items to add.
+                    </td>
+                </tr>`;
+            document.getElementById('lblSubtotal').innerText = `${currency} 0.00`;
+            document.getElementById('lblDiscount').innerText = `- ${currency} 0.00`;
+            document.getElementById('lblTax').innerText = `${currency} 0.00`;
+            document.getElementById('lblGrandTotal').innerText = `${currency} 0.00`;
+            document.getElementById('btnPay').disabled = true;
+            return;
+        }
+
+        let subtotal = 0;
+        let totalDiscount = 0;
+
+        cart.forEach(item => {
+            const lineTotal = (item.price * item.qty) - item.discount;
+            subtotal += lineTotal;
+            totalDiscount += item.discount;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-semibold text-light text-truncate" style="max-width: 140px;">${item.name}</div>
+                    <div class="text-muted small">${currency} ${item.price.toFixed(2)}</div>
+                </td>
+                <td class="text-center">
+                    <div class="d-inline-flex align-items-center gap-1 bg-surface rounded p-1 border border-subtle">
+                        <button class="btn btn-link text-light p-0" onclick="updateQty('${item.productId}', -1)"><i class="bi bi-dash"></i></button>
+                        <span class="px-2 fw-bold text-light mono">${item.qty}</span>
+                        <button class="btn btn-link text-light p-0" onclick="updateQty('${item.productId}', 1)"><i class="bi bi-plus"></i></button>
+                    </div>
+                </td>
+                <td class="text-end text-muted small">${currency} ${item.price.toFixed(2)}</td>
+                <td class="text-end fw-bold text-light">${currency} ${lineTotal.toFixed(2)}</td>
+                <td class="text-end">
+                    <button class="btn btn-link text-danger p-0" onclick="removeFromCart('${item.productId}')"><i class="bi bi-x-circle"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const tax = 0; // Tax is inclusive
+        const grandTotal = subtotal;
+
+        document.getElementById('lblSubtotal').innerText = `${currency} ${subtotal.toFixed(2)}`;
+        document.getElementById('lblDiscount').innerText = `- ${currency} ${totalDiscount.toFixed(2)}`;
+        document.getElementById('lblTax').innerText = `${currency} ${tax.toFixed(2)}`;
+        document.getElementById('lblGrandTotal').innerText = `${currency} ${grandTotal.toFixed(2)}`;
+        document.getElementById('btnPay').disabled = false;
+    }
+
+    // Payment Modal Logic
+    let currentGrandTotal = 0;
+
+    function openPaymentModal() {
+        currentGrandTotal = cart.reduce((acc, i) => acc + (i.price * i.qty - i.discount), 0);
+        document.getElementById('payModalTotalDue').innerText = `${currency} ${currentGrandTotal.toFixed(2)}`;
+        document.getElementById('tenderedCashInput').value = currentGrandTotal;
+        calculateChange();
+        new bootstrap.Modal(document.getElementById('paymentModal')).show();
+    }
+
+    function calculateChange() {
+        const tendered = parseFloat(document.getElementById('tenderedCashInput').value) || 0;
+        const change = tendered - currentGrandTotal;
+        const lblChange = document.getElementById('payModalChange');
+        if (change >= 0) {
+            lblChange.innerText = `${currency} ${change.toFixed(2)}`;
+            lblChange.className = 'fs-3 fw-bold text-emerald mono';
+        } else {
+            lblChange.innerText = `Short ${currency} ${Math.abs(change).toFixed(2)}`;
+            lblChange.className = 'fs-3 fw-bold text-danger mono';
+        }
+    }
+
+    function setTenderedExact() {
+        document.getElementById('tenderedCashInput').value = currentGrandTotal;
+        calculateChange();
+    }
+
+    function addTendered(amt) {
+        const cur = parseFloat(document.getElementById('tenderedCashInput').value) || 0;
+        document.getElementById('tenderedCashInput').value = cur + amt;
+        calculateChange();
+    }
+
+    // Submit Sale Order
+    async function submitSaleOrder() {
+        const btn = document.getElementById('btnSubmitPayment');
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Processing...`;
+
+        const tendered = parseFloat(document.getElementById('tenderedCashInput').value) || currentGrandTotal;
+        const selectedMethod = document.querySelector('input[name="selectedPaymentMethod"]:checked')?.value;
+        const customerIdVal = document.getElementById('cartCustomerId').value;
+        const customerId = customerIdVal && customerIdVal.length > 0 ? customerIdVal : null;
+        const clientTxId = crypto.randomUUID();
+
+        const orderDto = {
+            ClientTransactionId: clientTxId,
+            BranchId: activeBranchId,
+            CounterId: activeCounterId,
+            SessionId: activeSessionId,
+            CustomerId: customerId,
+            Items: cart.map(i => ({
+                ProductId: i.productId,
+                Qty: i.qty,
+                UnitPrice: i.price,
+                DiscountAmount: i.discount
+            })),
+            Payments: [{
+                PaymentMethodId: selectedMethod,
+                Amount: currentGrandTotal,
+                TenderedAmount: tendered,
+                ReferenceNo: document.getElementById('payReferenceNo').value || null
+            }]
+        };
+
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const res = await fetch('/POS/Checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify(orderDto)
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                document.getElementById('successInvoiceNo').innerText = data.invoiceNo;
+                document.getElementById('lnkViewThermalReceipt').href = data.receiptUrl;
+
+                new bootstrap.Modal(document.getElementById('receiptModal')).show();
+                clearCart();
+            } else {
+                alert('Checkout failed: ' + (data.message || 'Unknown error'));
+            }
+        } catch (err) {
+            console.error(err);
+            alert('An unexpected network or server error occurred during checkout.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i> Complete Sale & Print Receipt`;
+        }
+    }
+
+    function resetForNewSale() {
+        clearCart();
+        document.getElementById('barcodeScannerInput').focus();
+    }
+</script>
+}

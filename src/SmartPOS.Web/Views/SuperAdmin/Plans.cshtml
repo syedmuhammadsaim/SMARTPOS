@@ -1,0 +1,183 @@
+@model List<SmartPOS.Domain.Entities.SaaS.SubscriptionPlan>
+@{
+    ViewData["Title"] = "Subscription Plans - Super Admin";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-card-checklist text-emerald me-2"></i> Subscription Plans</h2>
+            <p class="text-muted small mb-0">Configure SaaS pricing tiers, branch quotas, user limits, and feature flags.</p>
+        </div>
+        <button type="button" class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#newPlanModal">
+            <i class="bi bi-plus-lg me-1"></i> Add New Plan
+        </button>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div>@TempData["SuccessMessage"]</div>
+        </div>
+    }
+
+    <div class="row g-4">
+        @foreach (var plan in Model)
+        {
+            <div class="col-lg-3 col-md-6">
+                <div class="card-stat h-100 p-4 d-flex flex-column position-relative @(plan.IsPopular ? "border-emerald" : "")">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h4 class="fw-bold text-white mb-0">@plan.Name</h4>
+                        <span class="badge bg-surface border border-subtle mono">@plan.Code</span>
+                    </div>
+                    <div class="fs-4 fw-bold text-emerald mb-2">
+                        @plan.Currency @plan.MonthlyPrice.ToString("N0") <span class="fs-6 text-muted fw-normal">/mo</span>
+                    </div>
+                    <p class="text-muted small mb-3">@plan.Description</p>
+                    <div class="small text-secondary flex-grow-1 mb-4">
+                        <div><i class="bi bi-check2 text-emerald me-1"></i> Max Branches: <strong>@plan.MaxBranches</strong></div>
+                        <div><i class="bi bi-check2 text-emerald me-1"></i> Max Counters: <strong>@plan.MaxCounters</strong></div>
+                        <div><i class="bi bi-check2 text-emerald me-1"></i> Max Users: <strong>@plan.MaxUsers</strong></div>
+                        <div><i class="bi bi-check2 text-emerald me-1"></i> Max Products: <strong>@plan.MaxProducts.ToString("N0")</strong></div>
+                        <div><i class="bi bi-check2 text-emerald me-1"></i> Advanced Reports: <strong>@(plan.HasAdvancedReports ? "Yes" : "No")</strong></div>
+                        <div><i class="bi bi-check2 text-emerald me-1"></i> FBR Integration: <strong>@(plan.HasFbrIntegration ? "Yes" : "No")</strong></div>
+                    </div>
+                    <button class="btn btn-outline-light border-subtle btn-sm w-100 rounded-3" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editPlanModal-@plan.Id">
+                        <i class="bi bi-pencil me-1"></i> Edit Plan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Edit Plan Modal -->
+            <div class="modal fade" id="editPlanModal-@plan.Id" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content bg-card border-subtle text-light">
+                        <div class="modal-header border-subtle">
+                            <h5 class="modal-title fw-bold">Edit Plan: @plan.Name</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form asp-action="SavePlan" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Id" value="@plan.Id" />
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Plan Name</label>
+                                    <input type="text" name="Name" value="@plan.Name" class="form-control bg-surface border-subtle text-light" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Plan Code</label>
+                                    <input type="text" name="Code" value="@plan.Code" class="form-control bg-surface border-subtle text-light" required />
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-semibold text-secondary">Monthly Price</label>
+                                        <input type="number" step="0.01" name="MonthlyPrice" value="@plan.MonthlyPrice" class="form-control bg-surface border-subtle text-light" required />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small fw-semibold text-secondary">Annual Price</label>
+                                        <input type="number" step="0.01" name="AnnualPrice" value="@plan.AnnualPrice" class="form-control bg-surface border-subtle text-light" required />
+                                    </div>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-4">
+                                        <label class="form-label small fw-semibold text-secondary">Max Branches</label>
+                                        <input type="number" name="MaxBranches" value="@plan.MaxBranches" class="form-control bg-surface border-subtle text-light" required />
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label small fw-semibold text-secondary">Max Counters</label>
+                                        <input type="number" name="MaxCounters" value="@plan.MaxCounters" class="form-control bg-surface border-subtle text-light" required />
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label small fw-semibold text-secondary">Max Users</label>
+                                        <input type="number" name="MaxUsers" value="@plan.MaxUsers" class="form-control bg-surface border-subtle text-light" required />
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Description</label>
+                                    <textarea name="Description" class="form-control bg-surface border-subtle text-light" rows="2">@plan.Description</textarea>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="HasAdvancedReports" value="true" @(plan.HasAdvancedReports ? "checked" : "") />
+                                    <label class="form-check-label small text-secondary">Advanced Reports</label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="HasFbrIntegration" value="true" @(plan.HasFbrIntegration ? "checked" : "") />
+                                    <label class="form-check-label small text-secondary">FBR Tier-1 Tax Integration</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="IsPopular" value="true" @(plan.IsPopular ? "checked" : "") />
+                                    <label class="form-check-label small text-secondary">Mark as Popular</label>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-subtle">
+                                <button type="button" class="btn btn-outline-light border-subtle" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-emerald fw-semibold">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- New Plan Modal -->
+<div class="modal fade" id="newPlanModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-card border-subtle text-light">
+            <div class="modal-header border-subtle">
+                <h5 class="modal-title fw-bold">Create Subscription Plan</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SavePlan" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Plan Name</label>
+                        <input type="text" name="Name" class="form-control bg-surface border-subtle text-light" placeholder="e.g. Growth Retail" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Plan Code</label>
+                        <input type="text" name="Code" class="form-control bg-surface border-subtle text-light" placeholder="e.g. GROWTH" required />
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Monthly Price (PKR)</label>
+                            <input type="number" step="0.01" name="MonthlyPrice" value="6000" class="form-control bg-surface border-subtle text-light" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Annual Price (PKR)</label>
+                            <input type="number" step="0.01" name="AnnualPrice" value="60000" class="form-control bg-surface border-subtle text-light" required />
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <label class="form-label small fw-semibold text-secondary">Max Branches</label>
+                            <input type="number" name="MaxBranches" value="2" class="form-control bg-surface border-subtle text-light" required />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small fw-semibold text-secondary">Max Counters</label>
+                            <input type="number" name="MaxCounters" value="4" class="form-control bg-surface border-subtle text-light" required />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small fw-semibold text-secondary">Max Users</label>
+                            <input type="number" name="MaxUsers" value="10" class="form-control bg-surface border-subtle text-light" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Description</label>
+                        <textarea name="Description" class="form-control bg-surface border-subtle text-light" rows="2" placeholder="Plan summary..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-subtle">
+                    <button type="button" class="btn btn-outline-light border-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-emerald fw-semibold">Create Plan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+@model List<SmartPOS.Domain.Entities.Organization.Business>
+@{
+    ViewData["Title"] = "Tenant Companies Management";
+    Layout = "_Layout";
+    var plans = ViewBag.Plans as Dictionary<Guid, string> ?? new();
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-buildings text-emerald me-2"></i> Registered Companies</h2>
+            <p class="text-muted small mb-0">Inspect tenant companies, branch counts, and subscription account statuses.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-light border-subtle btn-sm px-3 rounded-3">
+            <i class="bi bi-arrow-left me-1"></i> Back to Overview
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-card border-subtle rounded-3 p-3 mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-surface border-subtle text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" value="@ViewBag.Search" class="form-control bg-surface border-subtle text-light" placeholder="Search by name, code, or email..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select bg-surface border-subtle text-light">
+                    <option value="">All Statuses</option>
+                    <option value="Active" selected="@(ViewBag.Status == "Active")">Active</option>
+                    <option value="Suspended" selected="@(ViewBag.Status == "Suspended")">Suspended</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-emerald w-100 fw-semibold">Filter</button>
+            </div>
+            <div class="col-md-2">
+                <a asp-action="Companies" class="btn btn-outline-light border-subtle w-100">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card bg-card border-subtle rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Tenant Code</th>
+                        <th>Subscription Plan</th>
+                        <th>Branches</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">No companies matched your query.</td>
+                        </tr>
+                    }
+                    @foreach (var c in Model)
+                    {
+                        var planName = c.SubscriptionPlanId.HasValue && plans.TryGetValue(c.SubscriptionPlanId.Value, out var pName) ? pName : "Free Trial";
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-light">@c.Name</div>
+                                <div class="text-muted small">@c.Email • @c.Phone</div>
+                            </td>
+                            <td><span class="badge bg-surface border border-subtle mono">@c.Code</span></td>
+                            <td><span class="badge bg-emerald-subtle text-emerald border border-emerald">@planName</span></td>
+                            <td><span class="badge bg-surface border border-subtle">@c.Branches.Count Branches</span></td>
+                            <td>
+                                @if (c.Status == "Active")
+                                {
+                                    <span class="badge bg-emerald-subtle text-emerald border border-emerald">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger">@c.Status</span>
+                                }
+                            </td>
+                            <td class="text-muted small">@c.CreatedAtUtc.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                <a asp-action="CompanyDetails" asp-route-id="@c.Id" class="btn btn-outline-light border-subtle btn-sm px-3 py-1 rounded">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

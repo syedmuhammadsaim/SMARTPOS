@@ -1,0 +1,126 @@
+@model List<SmartPOS.Domain.Entities.Customers.Customer>
+@{
+    ViewData["Title"] = "Customer Management & Udhaar - SMARTPOS ENTERPRISE";
+    Layout = "_Layout";
+    var currency = ViewBag.Currency as string ?? "PKR";
+    var totalUdhaar = (decimal)ViewBag.TotalUdhaar;
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-people text-emerald me-2"></i> Customers & Credit Accounts</h2>
+            <p class="text-muted small mb-0">Customer directory, store credit limits, outstanding Udhaar ledgers, and payment receipts.</p>
+        </div>
+        <button class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#newCustomerModal">
+            <i class="bi bi-plus-lg me-1"></i> Register Customer
+        </button>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div>@TempData["SuccessMessage"]</div>
+        </div>
+    }
+
+    <!-- Udhaar Receivable Stat Card -->
+    <div class="card-stat p-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <span class="text-muted small text-uppercase fw-semibold">Total Customer Udhaar Outstanding</span>
+                <div class="fs-3 fw-bold text-warning mono">@currency @totalUdhaar.ToString("N2")</div>
+            </div>
+            <div class="small text-muted">
+                <i class="bi bi-info-circle text-emerald me-1"></i> Customers with outstanding credit balances
+            </div>
+        </div>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="card bg-card border-subtle rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Credit Limit</th>
+                        <th>Outstanding Udhaar</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted py-5">No customers registered yet.</td></tr>
+                    }
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-light">@c.Name</td>
+                            <td class="text-secondary small">@(c.Phone ?? "-")</td>
+                            <td class="text-muted small">@(c.Email ?? "-")</td>
+                            <td class="text-muted small">@currency @c.CreditLimit.ToString("N0")</td>
+                            <td class="fw-bold @(c.CurrentBalance > 0 ? "text-warning" : "text-emerald") mono">
+                                @currency @c.CurrentBalance.ToString("N2")
+                            </td>
+                            <td><span class="badge bg-emerald-subtle text-emerald border border-emerald">@c.Status</span></td>
+                            <td class="text-end">
+                                <a asp-action="Ledger" asp-route-id="@c.Id" class="btn btn-outline-light border-subtle btn-sm px-2 py-1 rounded">
+                                    <i class="bi bi-journal-text me-1 text-emerald"></i> Ledger & Pay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: New Customer -->
+<div class="modal fade" id="newCustomerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-card border-subtle text-light">
+            <div class="modal-header border-subtle">
+                <h5 class="modal-title fw-bold">Register Customer Account</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Customer Full Name</label>
+                        <input type="text" name="name" class="form-control bg-surface border-subtle text-light" placeholder="e.g. Tariq Mehmood" required />
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Phone Number</label>
+                            <input type="text" name="phone" class="form-control bg-surface border-subtle text-light" placeholder="+92 300 0000000" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Credit Limit (@currency)</label>
+                            <input type="number" step="1000" name="creditLimit" value="25000" class="form-control bg-surface border-subtle text-light mono" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Email Address</label>
+                        <input type="email" name="email" class="form-control bg-surface border-subtle text-light" placeholder="customer@mail.com" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Address / Location</label>
+                        <textarea name="address" class="form-control bg-surface border-subtle text-light" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-subtle">
+                    <button type="button" class="btn btn-outline-light border-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-emerald fw-semibold">Save Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -25,16 +25,38 @@ public class TenantProvider : ITenantProvider
             var context = _httpContextAccessor.HttpContext;
             if (context == null) return null;
 
-            // Check claims
+            // 1. Primary Source of Truth: Authenticated user's verified BusinessId claim
             var claim = context.User.FindFirst("BusinessId")?.Value;
             if (!string.IsNullOrEmpty(claim) && Guid.TryParse(claim, out var bId))
-                return bId;
-
-            // Check header
-            if (context.Request.Headers.TryGetValue("X-Business-Id", out var headerVal) &&
-                Guid.TryParse(headerVal.FirstOrDefault(), out var hId))
             {
-                return hId;
+                // If user is SuperAdmin and an explicit tenant switch header is provided for support/audit:
+                if (context.User.IsInRole("SuperAdmin"))
+                {
+                    if (context.Request.Headers.TryGetValue("X-Business-Id", out var adminOverride) &&
+                        Guid.TryParse(adminOverride.FirstOrDefault(), out var overrideId))
+                    {
+                        return overrideId;
+                    }
+                }
+                return bId;
+            }
+
+            // 2. For SuperAdmin without a direct BusinessId claim, allow support context header
+            if (context.User.IsInRole("SuperAdmin"))
+            {
+                if (context.Request.Headers.TryGetValue("X-Business-Id", out var adminHeader) &&
+                    Guid.TryParse(adminHeader.FirstOrDefault(), out var hId))
+                {
+                    return hId;
+                }
+                return null;
+            }
+
+            // 3. For public/anonymous API endpoints (e.g. self-service device handshake with credentials)
+            if (context.Request.Headers.TryGetValue("X-Business-Id", out var headerVal) &&
+                Guid.TryParse(headerVal.FirstOrDefault(), out var anonId))
+            {
+                return anonId;
             }
 
             return null;

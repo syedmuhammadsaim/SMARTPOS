@@ -5,12 +5,19 @@ namespace SmartPOS.Domain.Entities.Organization;
 public class Business : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
+    public string? Code { get; set; }
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
     public string? Contact { get; set; }
     public string? Address { get; set; }
     public string? Logo { get; set; }
     public string CurrencyCode { get; set; } = "PKR";
     public string TimeZone { get; set; } = "Pakistan Standard Time";
-    public string Status { get; set; } = "Active";
+    public string Status { get; set; } = "Active"; // Active, Suspended, Inactive
+    public string? TaxRegistrationNumber { get; set; }
+    public Guid? OwnerUserId { get; set; }
+    public Guid? SubscriptionPlanId { get; set; }
+    public DateTime? SubscriptionExpiresAtUtc { get; set; }
 
     public ICollection<Branch> Branches { get; set; } = new List<Branch>();
     public ICollection<Department> Departments { get; set; } = new List<Department>();

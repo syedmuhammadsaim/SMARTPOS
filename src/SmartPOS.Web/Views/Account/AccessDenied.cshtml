@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_Layout";
+}
+
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow bg-card p-5 rounded-4">
+                <div class="text-danger mb-3">
+                    <i class="bi bi-shield-x fs-1"></i>
+                </div>
+                <h2 class="fw-bold text-light mb-2">Access Restricted</h2>
+                <p class="text-muted mb-4">
+                    You do not possess the required permissions or role scope to access this section of SMARTPOS Enterprise. If you believe this is an error, please reach out to your company administrator.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light px-4">
+                        <i class="bi bi-house me-1"></i> Home
+                    </a>
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-emerald px-4">
+                        <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

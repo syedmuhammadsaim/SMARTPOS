@@ -1,0 +1,185 @@
+@model SmartPOS.Web.Models.SuperAdminDashboardViewModel
+@{
+    ViewData["Title"] = "Platform Super Admin Overview";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-emerald-subtle text-emerald border border-emerald px-2 py-1 rounded-pill small">SaaS Platform Headquarters</span>
+                <span class="text-muted small">Global System Control</span>
+            </div>
+            <h2 class="fw-bold text-white mb-0">Platform Overview & Telemetry</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Companies" class="btn btn-outline-light border-subtle btn-sm px-3 rounded-3">
+                <i class="bi bi-buildings me-1"></i> Manage Companies
+            </a>
+            <a asp-action="Plans" class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold">
+                <i class="bi bi-card-checklist me-1"></i> Subscription Plans
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card-stat p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Total Tenants</span>
+                    <span class="p-2 rounded-circle bg-emerald-subtle text-emerald"><i class="bi bi-building"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-light">@Model.TotalCompanies</div>
+                <div class="small text-emerald"><i class="bi bi-arrow-up-right"></i> @Model.ActiveCompanies Active</div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card-stat p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Suspended</span>
+                    <span class="p-2 rounded-circle bg-danger-subtle text-danger"><i class="bi bi-pause-circle"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-light">@Model.SuspendedCompanies</div>
+                <div class="small text-muted">Tenant status locks</div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card-stat p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Platform MRR</span>
+                    <span class="p-2 rounded-circle bg-emerald-subtle text-emerald"><i class="bi bi-currency-exchange"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-emerald">PKR @Model.MonthlyRecurringRevenue.ToString("N0")</div>
+                <div class="small text-muted">Recurring SaaS flow</div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card-stat p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Total GMV Sales</span>
+                    <span class="p-2 rounded-circle bg-info-subtle text-info"><i class="bi bi-cash-stack"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-light">PKR @Model.TotalPlatformSales.ToString("N0")</div>
+                <div class="small text-muted">Across all branches</div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card-stat p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Active Branches</span>
+                    <span class="p-2 rounded-circle bg-warning-subtle text-warning"><i class="bi bi-shop"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-light">@Model.TotalBranches</div>
+                <div class="small text-muted">Operating retail outlets</div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card-stat p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Staff Users</span>
+                    <span class="p-2 rounded-circle bg-surface text-secondary"><i class="bi bi-people"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-light">@Model.TotalUsers</div>
+                <div class="small text-muted">Admins, Cashiers, Staff</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables & Feeds Row -->
+    <div class="row g-4">
+        <!-- Recent Registered Companies -->
+        <div class="col-lg-8">
+            <div class="card bg-card border-subtle rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-surface border-subtle d-flex justify-content-between align-items-center py-3 px-4">
+                    <h5 class="fw-bold text-light mb-0"><i class="bi bi-buildings me-2 text-emerald"></i> Recent Registered Companies</h5>
+                    <a asp-action="Companies" class="text-emerald small fw-semibold text-decoration-none">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Code</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.RecentCompanies.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No companies registered yet.</td>
+                                </tr>
+                            }
+                            @foreach (var c in Model.RecentCompanies)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-light">@c.Name</div>
+                                        <div class="text-muted small">@c.Email • @c.Phone</div>
+                                    </td>
+                                    <td><span class="badge bg-surface border border-subtle mono">@c.Code</span></td>
+                                    <td>
+                                        @if (c.Status == "Active")
+                                        {
+                                            <span class="badge bg-emerald-subtle text-emerald border border-emerald">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger">@c.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-muted small">@c.CreatedAtUtc.ToString("dd MMM yyyy")</td>
+                                    <td class="text-end">
+                                        <a asp-action="CompanyDetails" asp-route-id="@c.Id" class="btn btn-outline-light border-subtle btn-sm px-2 py-1 rounded">
+                                            <i class="bi bi-eye"></i> Manage
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Audit Trail -->
+        <div class="col-lg-4">
+            <div class="card bg-card border-subtle rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-surface border-subtle d-flex justify-content-between align-items-center py-3 px-4">
+                    <h5 class="fw-bold text-light mb-0"><i class="bi bi-journal-text me-2 text-emerald"></i> Audit Stream</h5>
+                    <a asp-action="AuditLogs" class="text-emerald small fw-semibold text-decoration-none">Logs</a>
+                </div>
+                <div class="p-3">
+                    @if (!Model.RecentAuditLogs.Any())
+                    {
+                        <div class="text-center text-muted py-4 small">No security events recorded yet.</div>
+                    }
+                    @foreach (var log in Model.RecentAuditLogs)
+                    {
+                        <div class="p-2 mb-2 rounded bg-surface border border-subtle small">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-emerald mono">@log.Action</span>
+                                <span class="text-muted" style="font-size: 0.72rem;">@log.CreatedAtUtc.ToString("HH:mm:ss")</span>
+                            </div>
+                            <div class="text-secondary small">Entity: @log.Entity (@log.EntityId)</div>
+                            @if (!string.IsNullOrEmpty(log.IpAddress))
+                            {
+                                <div class="text-muted" style="font-size: 0.7rem;">IP: @log.IpAddress</div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

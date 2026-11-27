@@ -1,0 +1,126 @@
+@model List<SmartPOS.Domain.Entities.Catalog.Product>
+@{
+    ViewData["Title"] = "Product Catalog - SMARTPOS ENTERPRISE";
+    Layout = "_Layout";
+    var stockMap = ViewBag.StockMap as Dictionary<Guid, decimal> ?? new();
+    var categories = ViewBag.Categories as List<SmartPOS.Domain.Entities.Catalog.Category> ?? new();
+    var currency = ViewBag.Currency as string ?? "PKR";
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-box-seam text-emerald me-2"></i> Product Catalog</h2>
+            <p class="text-muted small mb-0">Manage items, barcodes, SKU identifiers, cost prices, sale prices, and stock thresholds.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Create" class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold">
+                <i class="bi bi-plus-lg me-1"></i> Add Product
+            </a>
+            <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-light border-subtle btn-sm px-3 rounded-3">
+                <i class="bi bi-tags me-1"></i> Categories & Brands
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div>@TempData["SuccessMessage"]</div>
+        </div>
+    }
+
+    <!-- Filters Bar -->
+    <div class="card bg-card border-subtle rounded-3 p-3 mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-surface border-subtle text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" value="@ViewBag.Search" class="form-control bg-surface border-subtle text-light" placeholder="Search by product name, barcode, or SKU..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="categoryId" class="form-select bg-surface border-subtle text-light">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat.Id" selected="@(ViewBag.CategoryId == cat.Id)">@cat.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-emerald w-100 fw-semibold">Filter</button>
+            </div>
+            <div class="col-md-2">
+                <a asp-action="Index" class="btn btn-outline-light border-subtle w-100">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card bg-card border-subtle rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>SKU / Barcode</th>
+                        <th>Category</th>
+                        <th>Cost Price</th>
+                        <th>Sale Price</th>
+                        <th>Margin</th>
+                        <th>Stock on Hand</th>
+                        <th>Status</th>
+                        <th class="text-end">Barcode Labels</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="9" class="text-center text-muted py-5">No products found. Add products to populate your catalog.</td></tr>
+                    }
+                    @foreach (var p in Model)
+                    {
+                        var stock = stockMap.TryGetValue(p.Id, out var s) ? s : 0m;
+                        var barcode = p.Barcodes.FirstOrDefault(b => b.IsPrimary)?.Barcode ?? p.Barcodes.FirstOrDefault()?.Barcode ?? p.Sku;
+                        var margin = p.SalePrice > 0 ? ((p.SalePrice - p.PurchasePrice) / p.SalePrice * 100m) : 0m;
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-light">@p.Name</div>
+                                <div class="text-muted small">@(p.Brand?.Name ?? "No Brand") • @(p.Unit?.Name ?? "Pcs")</div>
+                            </td>
+                            <td>
+                                <div><span class="badge bg-surface border border-subtle mono">@p.Sku</span></div>
+                                <div class="text-muted small mono" style="font-size: 0.75rem;"><i class="bi bi-upc"></i> @barcode</div>
+                            </td>
+                            <td><span class="badge bg-surface border border-subtle">@(p.Category?.Name ?? "Uncategorized")</span></td>
+                            <td class="text-muted small">@currency @p.PurchasePrice.ToString("N2")</td>
+                            <td class="fw-bold text-light">@currency @p.SalePrice.ToString("N2")</td>
+                            <td>
+                                <span class="badge @(margin >= 20 ? "bg-emerald-subtle text-emerald" : "bg-warning-subtle text-warning")">
+                                    @margin.ToString("F1")%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(stock > p.MinStock ? "bg-emerald-subtle text-emerald" : (stock > 0 ? "bg-warning-subtle text-warning" : "bg-danger-subtle text-danger"))">
+                                    @stock.ToString("N0") @(p.Unit?.ShortCode ?? "Pcs")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(p.Status == "Active" ? "bg-emerald-subtle text-emerald" : "bg-danger-subtle text-danger")">
+                                    @p.Status
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="BarcodeLabels" asp-route-id="@p.Id" class="btn btn-outline-light border-subtle btn-sm px-2 py-1 rounded" target="_blank" title="Print Barcode Labels">
+                                    <i class="bi bi-printer me-1 text-emerald"></i> Labels
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

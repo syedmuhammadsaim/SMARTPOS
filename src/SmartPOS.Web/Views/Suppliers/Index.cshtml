@@ -1,0 +1,109 @@
+@model List<SmartPOS.Domain.Entities.Purchasing.Supplier>
+@{
+    ViewData["Title"] = "Supplier Directory - SMARTPOS ENTERPRISE";
+    Layout = "_Layout";
+    var currency = ViewBag.Currency as string ?? "PKR";
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-truck text-emerald me-2"></i> Supplier Directory</h2>
+            <p class="text-muted small mb-0">Vendors, contact persons, phone numbers, and payable balances.</p>
+        </div>
+        <button class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#newSupplierModal">
+            <i class="bi bi-plus-lg me-1"></i> Add Supplier
+        </button>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div>@TempData["SuccessMessage"]</div>
+        </div>
+    }
+
+    <div class="card bg-card border-subtle rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th>Supplier</th>
+                        <th>Contact Person</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Payable Balance</th>
+                        <th>Status</th>
+                        <th class="text-end">Ledger</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted py-5">No suppliers registered yet.</td></tr>
+                    }
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-light">@s.Name</td>
+                            <td class="text-secondary small">@(s.ContactPerson ?? "-")</td>
+                            <td class="text-muted small">@(s.Phone ?? "-")</td>
+                            <td class="text-muted small">@(s.Email ?? "-")</td>
+                            <td class="fw-bold text-warning mono">@currency @s.CurrentBalance.ToString("N2")</td>
+                            <td><span class="badge bg-emerald-subtle text-emerald border border-emerald">@s.Status</span></td>
+                            <td class="text-end">
+                                <a asp-action="Ledger" asp-route-id="@s.Id" class="btn btn-outline-light border-subtle btn-sm px-2 py-1 rounded">
+                                    <i class="bi bi-journal-text me-1 text-emerald"></i> Ledger
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: New Supplier -->
+<div class="modal fade" id="newSupplierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-card border-subtle text-light">
+            <div class="modal-header border-subtle">
+                <h5 class="modal-title fw-bold">Register New Supplier</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Supplier / Vendor Name</label>
+                        <input type="text" name="name" class="form-control bg-surface border-subtle text-light" placeholder="e.g. Metro Wholesale Distribution" required />
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Contact Person</label>
+                            <input type="text" name="contactPerson" class="form-control bg-surface border-subtle text-light" placeholder="Manager Name" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Phone Number</label>
+                            <input type="text" name="phone" class="form-control bg-surface border-subtle text-light" placeholder="+92 300 0000000" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Email Address</label>
+                        <input type="email" name="email" class="form-control bg-surface border-subtle text-light" placeholder="orders@supplier.com" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Warehouse Address</label>
+                        <textarea name="address" class="form-control bg-surface border-subtle text-light" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-subtle">
+                    <button type="button" class="btn btn-outline-light border-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-emerald fw-semibold">Save Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,133 @@
+@model List<SmartPOS.Domain.Entities.Inventory.StockTransfer>
+@{
+    ViewData["Title"] = "Inter-Branch Stock Transfers - SMARTPOS ENTERPRISE";
+    Layout = "_Layout";
+    var warehouses = ViewBag.Warehouses as List<SmartPOS.Domain.Entities.Inventory.Warehouse> ?? new();
+    var products = ViewBag.Products as List<SmartPOS.Domain.Entities.Catalog.Product> ?? new();
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-arrow-left-right text-emerald me-2"></i> Stock Transfers</h2>
+            <p class="text-muted small mb-0">Dispatch and receive inventory movements between warehouses and retail branches.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-light border-subtle btn-sm px-3 rounded-3">
+                <i class="bi bi-arrow-left me-1"></i> Back to Inventory
+            </a>
+            <button class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#newTransferModal">
+                <i class="bi bi-plus-lg me-1"></i> New Transfer
+            </button>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div>@TempData["SuccessMessage"]</div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+            <div>@TempData["ErrorMessage"]</div>
+        </div>
+    }
+
+    <div class="card bg-card border-subtle rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th>Transfer #</th>
+                        <th>From Warehouse</th>
+                        <th>To Warehouse</th>
+                        <th>Items Count</th>
+                        <th>Status</th>
+                        <th>Date (UTC)</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted py-5">No stock transfers processed yet.</td></tr>
+                    }
+                    @foreach (var t in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-surface border border-subtle mono text-light">@t.TransferNo</span></td>
+                            <td class="text-light">@(t.FromWarehouse?.Name ?? "Source Warehouse")</td>
+                            <td class="text-light">@(t.ToWarehouse?.Name ?? "Destination Warehouse")</td>
+                            <td><span class="badge bg-emerald-subtle text-emerald">@t.Items.Count Items</span></td>
+                            <td><span class="badge bg-emerald-subtle text-emerald border border-emerald">@t.Status</span></td>
+                            <td class="text-muted small">@t.CreatedAtUtc.ToString("dd MMM yyyy HH:mm")</td>
+                            <td class="text-muted small">@(t.Reason ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: New Transfer -->
+<div class="modal fade" id="newTransferModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-card border-subtle text-light">
+            <div class="modal-header border-subtle">
+                <h5 class="modal-title fw-bold">Dispatch Stock Transfer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CreateTransfer" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">From Warehouse</label>
+                            <select name="fromWarehouseId" class="form-select bg-surface border-subtle text-light" required>
+                                @foreach (var w in warehouses)
+                                {
+                                    <option value="@w.Id">@w.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">To Warehouse</label>
+                            <select name="toWarehouseId" class="form-select bg-surface border-subtle text-light" required>
+                                @foreach (var w in warehouses)
+                                {
+                                    <option value="@w.Id">@w.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Product to Transfer</label>
+                        <select name="productId" class="form-select bg-surface border-subtle text-light" required>
+                            @foreach (var p in products)
+                            {
+                                <option value="@p.Id">@p.Name (@p.Sku)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Quantity</label>
+                        <input type="number" step="1" name="qty" class="form-control bg-surface border-subtle text-light mono" value="10" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Dispatch Note</label>
+                        <input type="text" name="note" class="form-control bg-surface border-subtle text-light" placeholder="e.g. Branch replenishment" />
+                    </div>
+                </div>
+                <div class="modal-footer border-subtle">
+                    <button type="button" class="btn btn-outline-light border-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-emerald fw-semibold">Dispatch Transfer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -80,6 +80,7 @@ public static class DependencyInjection
             options.Lockout.MaxFailedAccessAttempts = 5;
         })
         .AddEntityFrameworkStores<SmartPOSDbContext>()
+        .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>()
         .AddDefaultTokenProviders();
 
         return services;

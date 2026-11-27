@@ -1,0 +1,157 @@
+@model List<SmartPOS.Domain.Entities.ShiftsAndSessions.CounterSession>
+@{
+    ViewData["Title"] = "Cashier Shifts & Till Reconciliation - SMARTPOS ENTERPRISE";
+    Layout = "_Layout";
+    var counters = ViewBag.Counters as List<SmartPOS.Domain.Entities.Organization.Counter> ?? new();
+    var currency = ViewBag.Currency as string ?? "PKR";
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-clock-history text-emerald me-2"></i> Cashier Shifts & Sessions</h2>
+            <p class="text-muted small mb-0">Open register till, count cash at closing, and reconcile cash differences with X & Z reports.</p>
+        </div>
+        <button class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#openShiftModal">
+            <i class="bi bi-play-circle me-1"></i> Open New Till Shift
+        </button>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div>@TempData["SuccessMessage"]</div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+            <div>@TempData["ErrorMessage"]</div>
+        </div>
+    }
+
+    <div class="card bg-card border-subtle rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th>Branch & Counter</th>
+                        <th>Started At (UTC)</th>
+                        <th>Opening Cash</th>
+                        <th>Expected Cash</th>
+                        <th>Actual Cash</th>
+                        <th>Variance</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-5">No shift sessions found.</td></tr>
+                    }
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-light">@(s.Counter?.Name ?? "Counter 01")</div>
+                                <div class="text-muted small">@(s.Branch?.Name ?? "Main Outlet")</div>
+                            </td>
+                            <td class="text-muted small">@s.StartUtc.ToString("dd MMM yyyy HH:mm")</td>
+                            <td class="text-light mono">@currency @s.OpeningCash.ToString("N2")</td>
+                            <td class="text-light mono">@currency @s.ExpectedCash.ToString("N2")</td>
+                            <td class="text-light mono">@(s.Status == SmartPOS.Domain.Enums.CounterSessionStatus.Open ? "-" : $"{currency} {s.ActualCash:N2}")</td>
+                            <td class="mono @(s.Variance == 0 ? "text-emerald" : (s.Variance > 0 ? "text-info" : "text-danger"))">
+                                @(s.Status == SmartPOS.Domain.Enums.CounterSessionStatus.Open ? "-" : $"{currency} {s.Variance:+#,##0.00;-#,##0.00;0.00}")
+                            </td>
+                            <td>
+                                <span class="badge @(s.Status == SmartPOS.Domain.Enums.CounterSessionStatus.Open ? "bg-emerald-subtle text-emerald border border-emerald" : "bg-surface border border-subtle text-muted")">
+                                    @s.Status
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Report" asp-route-sessionId="@s.Id" class="btn btn-outline-light border-subtle btn-sm px-2 py-1 rounded me-1" title="Generate X/Z Shift Report">
+                                    <i class="bi bi-file-earmark-text text-emerald"></i> Report
+                                </a>
+                                @if (s.Status == SmartPOS.Domain.Enums.CounterSessionStatus.Open)
+                                {
+                                    <button class="btn btn-outline-danger border-subtle btn-sm px-2 py-1 rounded" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#closeShiftModal-@s.Id" title="Close Cashier Shift">
+                                        <i class="bi bi-stop-circle"></i> Close Shift
+                                    </button>
+
+                                    <!-- Close Shift Modal -->
+                                    <div class="modal fade" id="closeShiftModal-@s.Id" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content bg-card border-subtle text-light text-start">
+                                                <div class="modal-header border-subtle">
+                                                    <h5 class="modal-title fw-bold">Close Shift: @(s.Counter?.Name ?? "Counter")</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form asp-action="CloseShift" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="sessionId" value="@s.Id" />
+                                                    <div class="modal-body">
+                                                        <div class="p-3 rounded bg-surface border border-subtle mb-3 text-center">
+                                                            <span class="text-muted small">Opening Cash: @currency @s.OpeningCash.ToString("N2")</span>
+                                                            <div class="fs-4 fw-bold text-emerald mono mt-1">Expected: @currency @s.ExpectedCash.ToString("N2")</div>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label small fw-semibold text-secondary">Actual Counted Cash in Till (@currency)</label>
+                                                            <input type="number" step="0.01" name="actualCashCounted" class="form-control bg-surface border-subtle text-light mono fs-4 fw-bold" placeholder="0.00" required />
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-subtle">
+                                                        <button type="button" class="btn btn-outline-light border-subtle" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-danger fw-semibold">Confirm Closing & Z-Report</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Open New Shift -->
+<div class="modal fade" id="openShiftModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-card border-subtle text-light">
+            <div class="modal-header border-subtle">
+                <h5 class="modal-title fw-bold">Open Cashier Shift</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="OpenShift" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Select Counter</label>
+                        <select name="counterId" class="form-select bg-surface border-subtle text-light" required>
+                            @foreach (var c in counters)
+                            {
+                                <option value="@c.Id">@c.Name (@(c.Branch?.Name ?? "Main Outlet"))</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Opening Cash Float Amount (@currency)</label>
+                        <input type="number" step="10" name="openingCash" class="form-control bg-surface border-subtle text-light mono fs-4 fw-bold" value="1000" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-subtle">
+                    <button type="button" class="btn btn-outline-light border-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-emerald fw-semibold">Open Shift</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

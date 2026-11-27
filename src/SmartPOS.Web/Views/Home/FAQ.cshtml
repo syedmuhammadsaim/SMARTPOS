@@ -1,0 +1,69 @@
+@{
+    ViewData["Title"] = "Frequently Asked Questions - SMARTPOS ENTERPRISE";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge bg-emerald-subtle text-emerald px-3 py-2 rounded-pill fw-semibold mb-2">Help & Answers</span>
+        <h1 class="fw-bold text-white mb-2">Frequently Asked Questions</h1>
+        <p class="text-muted max-w-xl mx-auto">Find quick answers to common questions about hardware compatibility, data security, and multi-branch setup.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="accordion accordion-flush" id="faqAccordion">
+                <div class="accordion-item bg-card border-subtle rounded-3 mb-3">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button bg-card text-light collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                            Do I need special drivers for my USB barcode scanner?
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary small">
+                            No. SMARTPOS ENTERPRISE uses a standard USB HID keystroke listener that works out of the box with virtually all USB and Bluetooth barcode scanners.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-card border-subtle rounded-3 mb-3">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button bg-card text-light collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                            How is my company's data kept isolated from other businesses?
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary small">
+                            SMARTPOS ENTERPRISE enforces multi-tenant security via automated EF Core query filters and verified claims context. No company can query or update another company's records.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-card border-subtle rounded-3 mb-3">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button bg-card text-light collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                            Can I operate multiple branches with independent stock?
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary small">
+                            Yes. Each branch has its own stock balances, cashier counters, pricing tiers, and daily shift closings, while the owner dashboard aggregates live consolidated reports.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-card border-subtle rounded-3 mb-3">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button bg-card text-light collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                            Which receipt printers are supported?
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary small">
+                            Any standard 80mm or 58mm ESC/POS thermal receipt printer recognized by your operating system or browser print dialog is supported.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

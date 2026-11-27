@@ -1,0 +1,303 @@
+@model SmartPOS.Web.Models.CompanyDashboardViewModel
+@{
+    ViewData["Title"] = $"{Model.CompanyName} - Enterprise Dashboard";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid px-md-4 py-4">
+    <!-- Welcome Toast/Banner if fresh onboarding -->
+    @if (Context.Request.Query["welcome"] == "true")
+    {
+        <div class="alert alert-success border-0 rounded-4 p-4 mb-4 shadow d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(17, 24, 39, 0.95) 100%); border: 1px solid var(--emerald-border) !important;">
+            <div class="d-flex align-items-center gap-3">
+                <span class="p-3 rounded-circle bg-emerald text-white fs-3"><i class="bi bi-patch-check-fill"></i></span>
+                <div>
+                    <h4 class="fw-bold text-white mb-1">Welcome to Your Company Workspace!</h4>
+                    <p class="text-secondary small mb-0">Your tenant database, default branch, counter, and warehouse have been provisioned and configured.</p>
+                </div>
+            </div>
+            <a asp-controller="POS" asp-action="Index" class="btn btn-emerald fw-semibold px-4 py-2 rounded-3">
+                <i class="bi bi-cart-check-fill me-1"></i> Open POS Billing
+            </a>
+        </div>
+    }
+
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-emerald-subtle text-emerald border border-emerald px-2 py-1 rounded-pill small">Enterprise Workspace</span>
+                <span class="text-muted small">@Model.CompanyName</span>
+            </div>
+            <h2 class="fw-bold text-white mb-0">Executive Dashboard & Analytics</h2>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-controller="POS" asp-action="Index" class="btn btn-emerald btn-sm px-3 py-2 rounded-3 fw-bold shadow">
+                <i class="bi bi-cart-check-fill me-1"></i> Open POS Terminal
+            </a>
+            <a asp-controller="Products" asp-action="Create" class="btn btn-outline-light border-subtle btn-sm px-3 py-2 rounded-3">
+                <i class="bi bi-plus-lg me-1"></i> Add Product
+            </a>
+            <a asp-controller="Shifts" asp-action="Index" class="btn btn-outline-light border-subtle btn-sm px-3 py-2 rounded-3">
+                <i class="bi bi-clock-history me-1"></i> Cashier Shifts
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="row g-3 mb-4">
+        <!-- Today Revenue -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card-stat p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Today's Sales</span>
+                    <span class="p-2 rounded-circle bg-emerald-subtle text-emerald"><i class="bi bi-currency-dollar"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-light">@Model.CurrencyCode @Model.TodayRevenue.ToString("N0")</div>
+                <div class="small text-muted">@Model.TodayOrders Orders Completed Today</div>
+            </div>
+        </div>
+
+        <!-- Month Revenue -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card-stat p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Month Revenue</span>
+                    <span class="p-2 rounded-circle bg-info-subtle text-info"><i class="bi bi-calendar-check"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-light">@Model.CurrencyCode @Model.MonthRevenue.ToString("N0")</div>
+                <div class="small text-muted">@Model.MonthOrders Orders This Month</div>
+            </div>
+        </div>
+
+        <!-- Gross & Net Profit -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card-stat p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Net Profit</span>
+                    <span class="p-2 rounded-circle bg-emerald-subtle text-emerald"><i class="bi bi-graph-up"></i></span>
+                </div>
+                <div class="fs-3 fw-bold @(Model.NetProfit >= 0 ? "text-emerald" : "text-danger")">
+                    @Model.CurrencyCode @Model.NetProfit.ToString("N0")
+                </div>
+                <div class="small text-secondary">Gross Profit: @Model.CurrencyCode @Model.GrossProfit.ToString("N0")</div>
+            </div>
+        </div>
+
+        <!-- Inventory Valuation & Alerts -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card-stat p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Stock Valuation</span>
+                    <span class="p-2 rounded-circle bg-warning-subtle text-warning"><i class="bi bi-box-seam"></i></span>
+                </div>
+                <div class="fs-3 fw-bold text-light">@Model.CurrencyCode @Model.TotalStockValuation.ToString("N0")</div>
+                <div class="small text-warning">
+                    <i class="bi bi-exclamation-triangle"></i> @Model.LowStockProducts Low Stock • @Model.OutOfStockProducts Out
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Counters Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card-stat p-3">
+                <div class="text-muted small mb-1">Catalog Products</div>
+                <div class="fs-4 fw-bold text-light">@Model.TotalProducts</div>
+                <div class="text-muted small">Registered SKUs</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card-stat p-3">
+                <div class="text-muted small mb-1">Customer Credit (Udhaar)</div>
+                <div class="fs-4 fw-bold text-warning">@Model.CurrencyCode @Model.TotalCustomerUdhaar.ToString("N0")</div>
+                <div class="text-muted small">Outstanding receivables</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card-stat p-3">
+                <div class="text-muted small mb-1">Customers Registered</div>
+                <div class="fs-4 fw-bold text-light">@Model.TotalCustomers</div>
+                <div class="text-muted small">Customer profiles</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card-stat p-3">
+                <div class="text-muted small mb-1">Suppliers & Vendors</div>
+                <div class="fs-4 fw-bold text-light">@Model.TotalSuppliers</div>
+                <div class="text-muted small">Supply partners</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- 7-Day Revenue Trend Line Chart -->
+        <div class="col-lg-8">
+            <div class="card bg-card border-subtle rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-light mb-0"><i class="bi bi-graph-up me-2 text-emerald"></i> 7-Day Revenue Trend</h5>
+                    <span class="badge bg-surface border border-subtle text-muted">Daily Sales</span>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Method Distribution Doughnut Chart -->
+        <div class="col-lg-4">
+            <div class="card bg-card border-subtle rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-light mb-0"><i class="bi bi-pie-chart me-2 text-emerald"></i> Payment Methods</h5>
+                    <span class="badge bg-surface border border-subtle text-muted">This Month</span>
+                </div>
+                <div style="height: 250px;" class="position-relative d-flex align-items-center justify-content-center">
+                    <canvas id="paymentMethodsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables Row: Branch Performance & Recent Orders -->
+    <div class="row g-4">
+        <!-- Branch Performance -->
+        <div class="col-lg-5">
+            <div class="card bg-card border-subtle rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-surface border-subtle py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-light mb-0"><i class="bi bi-shop me-2 text-emerald"></i> Branch Performance</h5>
+                    <a asp-controller="Branches" asp-action="Index" class="text-emerald small fw-semibold text-decoration-none">Manage</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Branch</th>
+                                <th>Orders</th>
+                                <th class="text-end">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.BranchPerformances.Any())
+                            {
+                                <tr><td colspan="3" class="text-center text-muted py-4">No branch activity recorded yet.</td></tr>
+                            }
+                            @foreach (var bp in Model.BranchPerformances)
+                            {
+                                <tr>
+                                    <td class="fw-semibold text-light">@bp.BranchName</td>
+                                    <td><span class="badge bg-surface border border-subtle">@bp.OrdersCount orders</span></td>
+                                    <td class="text-end fw-bold text-emerald">@Model.CurrencyCode @bp.SalesAmount.ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Completed Transactions -->
+        <div class="col-lg-7">
+            <div class="card bg-card border-subtle rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-surface border-subtle py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-light mb-0"><i class="bi bi-receipt me-2 text-emerald"></i> Recent Transactions</h5>
+                    <a asp-controller="Sales" asp-action="Index" class="text-emerald small fw-semibold text-decoration-none">View All Sales</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Customer</th>
+                                <th>Time</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th class="text-end">Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.RecentOrders.Any())
+                            {
+                                <tr><td colspan="6" class="text-center text-muted py-4">No sales recorded yet. Open POS to ring up transactions.</td></tr>
+                            }
+                            @foreach (var o in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-surface border border-subtle mono text-light">@o.InvoiceNo</span></td>
+                                    <td class="small text-secondary">@(o.Customer?.Name ?? "Walk-in Customer")</td>
+                                    <td class="small text-muted">@o.CreatedAtUtc.ToString("HH:mm")</td>
+                                    <td class="fw-bold text-light">@Model.CurrencyCode @o.Total.ToString("N2")</td>
+                                    <td>
+                                        <span class="badge bg-emerald-subtle text-emerald border border-emerald">@o.Status</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-controller="POS" asp-action="Receipt" asp-route-orderId="@o.Id" class="btn btn-outline-light border-subtle btn-sm px-2 py-1 rounded" target="_blank">
+                                            <i class="bi bi-printer"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Sales Trend Chart
+    const trendCtx = document.getElementById('salesTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesTrendDays)),
+            datasets: [{
+                label: 'Sales (@Model.CurrencyCode)',
+                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesTrendAmounts)),
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: '#10B981',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94A3B8' } },
+                y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94A3B8' } }
+            }
+        }
+    });
+
+    // Payment Methods Chart
+    const payCtx = document.getElementById('paymentMethodsChart').getContext('2d');
+    const payData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PaymentMethodDistribution));
+    new Chart(payCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(payData),
+            datasets: [{
+                data: Object.values(payData),
+                backgroundColor: ['#10B981', '#0EA5E9', '#F59E0B', '#6366F1', '#EC4899'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#94A3B8', boxWidth: 12 } }
+            },
+            cutout: '70%'
+        }
+    });
+</script>
+}

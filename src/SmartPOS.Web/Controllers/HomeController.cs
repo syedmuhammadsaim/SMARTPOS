@@ -1,10 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SmartPOS.Application.Features.Customers;
-using SmartPOS.Application.Features.Customers.DTOs;
-using SmartPOS.Application.Features.Inventory;
-using SmartPOS.Application.Features.Inventory.DTOs;
 using SmartPOS.Infrastructure.Data;
 using SmartPOS.Web.Models;
 
@@ -13,137 +9,65 @@ namespace SmartPOS.Web.Controllers;
 public class HomeController : Controller
 {
     private readonly SmartPOSDbContext _context;
-    private readonly IInventoryService _inventoryService;
-    private readonly ICustomerService _customerService;
 
-    public HomeController(SmartPOSDbContext context, IInventoryService inventoryService, ICustomerService customerService)
+    public HomeController(SmartPOSDbContext context)
     {
         _context = context;
-        _inventoryService = inventoryService;
-        _customerService = customerService;
     }
 
-    public async Task<IActionResult> Index(CancellationToken ct)
+    public async Task<IActionResult> Index()
     {
-        var today = DateTime.UtcNow.Date;
-        var sevenDaysAgo = today.AddDays(-6);
-        var chartDays = new List<string>();
-        var chartSales = new List<decimal>();
-
-        for (int i = 0; i < 7; i++)
+        if (User.Identity?.IsAuthenticated == true)
         {
-            chartDays.Add(sevenDaysAgo.AddDays(i).ToString("dd MMM"));
-            chartSales.Add(0m);
+            if (User.IsInRole("SuperAdmin"))
+                return RedirectToAction("Index", "SuperAdmin");
+            return RedirectToAction("Index", "Dashboard");
         }
 
-        var vm = new DashboardViewModel
-        {
-            TodaySales = 0m,
-            TodayTransactions = 0,
-            TotalCustomerUdhaar = 0m,
-            TotalStockValuation = 0m,
-            LowStockAlertsCount = 0,
-            ExpiringBatchesCount = 0
-        };
+        var plans = await _context.SubscriptionPlans
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.SortOrder)
+            .ToListAsync();
 
-        try
-        {
-            var todayOrders = await _context.POSOrders
-                .AsNoTracking()
-                .Where(o => o.BusinessDate >= today)
-                .ToListAsync(ct);
-
-            vm.TodaySales = todayOrders.Sum(o => o.Total);
-            vm.TodayTransactions = todayOrders.Count;
-
-            var lowStock = await _inventoryService.GetStockBalancesAsync(null, lowStockOnly: true, ct);
-            var expiringBatches = await _inventoryService.GetExpiringBatchesAsync(60, null, ct);
-            var ageingReport = await _customerService.GetCustomerAgeingReportAsync(ct);
-
-            vm.TotalCustomerUdhaar = await _context.Customers.SumAsync(c => (decimal?)c.CurrentBalance, ct) ?? 0m;
-            vm.TotalStockValuation = (await _inventoryService.GetStockBalancesAsync(null, false, ct))
-                .Sum(s => s.TotalValuation);
-
-            var last7DaysOrders = await _context.POSOrders
-                .AsNoTracking()
-                .Where(o => o.BusinessDate >= sevenDaysAgo)
-                .ToListAsync(ct);
-
-            chartSales.Clear();
-            for (int i = 0; i < 7; i++)
-            {
-                var day = sevenDaysAgo.AddDays(i);
-                chartSales.Add(last7DaysOrders.Where(o => o.BusinessDate.Date == day.Date).Sum(o => o.Total));
-            }
-
-            vm.LowStockAlertsCount = lowStock.Count;
-            vm.ExpiringBatchesCount = expiringBatches.Count;
-            vm.LowStockItems = lowStock.Take(10).ToList();
-            vm.ExpiringBatches = expiringBatches.Take(10).ToList();
-            vm.TopUdhaarCustomers = ageingReport.OrderByDescending(c => c.TotalOutstanding).Take(10).ToList();
-        }
-        catch (Exception ex)
-        {
-            // Fallback for offline/unseeded DB
-            Console.WriteLine($"[Dashboard Note] Live query fallback: {ex.Message}");
-        }
-
-        ViewBag.ChartDays = chartDays;
-        ViewBag.ChartSales = chartSales;
-
-        return View(vm);
+        return View(plans);
     }
 
-    public async Task<IActionResult> Inventory(CancellationToken ct)
+    public async Task<IActionResult> Pricing()
     {
-        try
-        {
-            var stock = await _inventoryService.GetStockBalancesAsync(null, false, ct);
-            return View(stock);
-        }
-        catch
-        {
-            return View(new List<StockBalanceDto>());
-        }
+        var plans = await _context.SubscriptionPlans
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.SortOrder)
+            .ToListAsync();
+
+        return View(plans);
     }
 
-    public async Task<IActionResult> ExpiringBatches(CancellationToken ct)
+    public IActionResult Features()
     {
-        try
-        {
-            var batches = await _inventoryService.GetExpiringBatchesAsync(90, null, ct);
-            return View(batches);
-        }
-        catch
-        {
-            return View(new List<ExpiringStockAlertDto>());
-        }
+        return View();
     }
 
-    public async Task<IActionResult> Customers(CancellationToken ct)
+    public IActionResult About()
     {
-        try
-        {
-            var customers = await _customerService.GetAllCustomersAsync(null, ct);
-            return View(customers);
-        }
-        catch
-        {
-            return View(new List<CustomerDto>());
-        }
+        return View();
     }
 
-    public async Task<IActionResult> CustomerAgeing(CancellationToken ct)
+    public IActionResult Contact()
     {
-        try
-        {
-            var ageing = await _customerService.GetCustomerAgeingReportAsync(ct);
-            return View(ageing);
-        }
-        catch
-        {
-            return View(new List<CustomerAgeingReportDto>());
-        }
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SubmitContact(string name, string email, string phone, string message)
+    {
+        TempData["SuccessMessage"] = "Thank you! Your message has been received. Our enterprise support team will contact you shortly.";
+        return RedirectToAction(nameof(Contact));
+    }
+
+    public IActionResult FAQ()
+    {
+        return View();
     }
 
     public IActionResult Privacy()

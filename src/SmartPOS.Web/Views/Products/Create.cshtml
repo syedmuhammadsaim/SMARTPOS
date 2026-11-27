@@ -1,0 +1,122 @@
+@{
+    ViewData["Title"] = "Add New Product - SMARTPOS ENTERPRISE";
+    Layout = "_Layout";
+    var categories = ViewBag.Categories as List<SmartPOS.Domain.Entities.Catalog.Category> ?? new();
+    var brands = ViewBag.Brands as List<SmartPOS.Domain.Entities.Catalog.Brand> ?? new();
+    var units = ViewBag.Units as List<SmartPOS.Domain.Entities.Catalog.Unit> ?? new();
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-white mb-1"><i class="bi bi-box-seam text-emerald me-2"></i> Add Product to Catalog</h2>
+                    <p class="text-muted small mb-0">Register SKU, barcode identifier, purchase and sale prices, and initial opening stock.</p>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-light border-subtle btn-sm px-3 rounded-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Products
+                </a>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger border-0 rounded-3 mb-4">
+                    <div asp-validation-summary="All" class="small mb-0"></div>
+                </div>
+            }
+
+            <div class="card bg-card border-subtle rounded-4 p-4 p-md-5 shadow-sm">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <h5 class="fw-bold text-light mb-3 pb-2 border-bottom border-subtle">
+                        <i class="bi bi-info-circle me-2 text-emerald"></i> Basic Information
+                    </h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label small fw-semibold text-secondary">Product Name</label>
+                            <input type="text" name="name" class="form-control bg-surface border-subtle text-light" placeholder="e.g. Olpers Full Cream Milk 1000ml" required autofocus />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-secondary">Category</label>
+                            <select name="categoryId" class="form-select bg-surface border-subtle text-light" required>
+                                <option value="">Select Category</option>
+                                @foreach (var c in categories)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">SKU Code (Unique)</label>
+                            <input type="text" name="sku" class="form-control bg-surface border-subtle text-light mono" placeholder="e.g. MLK-OLP-1L" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Barcode (UPC/EAN/Code128)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-surface border-subtle text-muted"><i class="bi bi-upc-scan"></i></span>
+                                <input type="text" name="barcode" class="form-control bg-surface border-subtle text-light mono" placeholder="Scan or type barcode" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Brand (Optional)</label>
+                            <select name="brandId" class="form-select bg-surface border-subtle text-light">
+                                <option value="">No Specific Brand</option>
+                                @foreach (var b in brands)
+                                {
+                                    <option value="@b.Id">@b.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Unit of Measurement</label>
+                            <select name="unitId" class="form-select bg-surface border-subtle text-light" required>
+                                @foreach (var u in units)
+                                {
+                                    <option value="@u.Id">@u.Name (@u.ShortCode)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold text-light mb-3 pb-2 border-bottom border-subtle">
+                        <i class="bi bi-currency-dollar me-2 text-emerald"></i> Pricing & Stock Thresholds
+                    </h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-secondary">Cost / Purchase Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-surface border-subtle text-muted">PKR</span>
+                                <input type="number" step="0.01" name="purchasePrice" class="form-control bg-surface border-subtle text-light" value="0.00" required />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-secondary">Retail Sale Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-surface border-subtle text-emerald fw-bold">PKR</span>
+                                <input type="number" step="0.01" name="salePrice" class="form-control bg-surface border-subtle text-light fw-bold" value="0.00" required />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-secondary">Reorder / Min Stock Level</label>
+                            <input type="number" step="1" name="minStock" class="form-control bg-surface border-subtle text-light" value="5" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Initial Opening Stock (Main Warehouse)</label>
+                            <input type="number" step="1" name="openingStock" class="form-control bg-surface border-subtle text-light" value="0" />
+                            <span class="text-muted small">Will automatically create opening inventory and transaction balance.</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top border-subtle">
+                        <a asp-action="Index" class="btn btn-outline-light border-subtle px-4">Cancel</a>
+                        <button type="submit" class="btn btn-emerald px-5 fw-bold">
+                            <i class="bi bi-save me-1"></i> Save Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

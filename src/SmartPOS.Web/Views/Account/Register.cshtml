@@ -1,0 +1,131 @@
+@model SmartPOS.Web.Models.RegisterCompanyViewModel
+@{
+    ViewData["Title"] = "Register Company - SMARTPOS Enterprise";
+    Layout = "_Layout";
+    var plans = ViewBag.AvailablePlans as List<SmartPOS.Domain.Entities.SaaS.SubscriptionPlan> ?? new();
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <span class="badge bg-emerald-subtle text-emerald px-3 py-2 rounded-pill fw-semibold mb-2">Instant Cloud Onboarding</span>
+                <h1 class="fw-bold tracking-tight">Launch Your Enterprise POS Today</h1>
+                <p class="text-muted lead fs-6">Complete the registration below to initialize your company workspace, default branch, counter, and live inventory database.</p>
+            </div>
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-card">
+                <div class="card-body p-4 p-md-5">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger border-0 rounded-3 small py-2 mb-4">
+                            <div asp-validation-summary="All" class="text-danger mb-0"></div>
+                        </div>
+                    }
+
+                    <form asp-action="Register" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <h5 class="fw-bold text-light mb-3 pb-2 border-bottom border-subtle">
+                            <i class="bi bi-building me-2 text-emerald"></i> Company Profile
+                        </h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="CompanyName" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="CompanyName" class="form-control bg-surface border-subtle text-light" placeholder="e.g. Apex Hypermarket & Stores" required />
+                                <span asp-validation-for="CompanyName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Currency" class="form-label small fw-semibold text-secondary"></label>
+                                <select asp-for="Currency" class="form-select bg-surface border-subtle text-light">
+                                    <option value="PKR" selected>PKR - Pakistani Rupee</option>
+                                    <option value="USD">USD - US Dollar</option>
+                                    <option value="AED">AED - UAE Dirham</option>
+                                    <option value="SAR">SAR - Saudi Riyal</option>
+                                    <option value="GBP">GBP - British Pound</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Address" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="Address" class="form-control bg-surface border-subtle text-light" placeholder="Business street address, market or city" />
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-light mb-3 pb-2 border-bottom border-subtle">
+                            <i class="bi bi-person-badge me-2 text-emerald"></i> Company Owner & Administrator
+                        </h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="FullName" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="FullName" class="form-control bg-surface border-subtle text-light" placeholder="e.g. Muhammad Saim" required />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="Phone" class="form-control bg-surface border-subtle text-light" placeholder="e.g. +92 300 1234567" required />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Email" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="Email" class="form-control bg-surface border-subtle text-light" placeholder="admin@yourcompany.com" required />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Password" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="Password" class="form-control bg-surface border-subtle text-light" placeholder="••••••••" required />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmPassword" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="ConfirmPassword" class="form-control bg-surface border-subtle text-light" placeholder="••••••••" required />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-light mb-3 pb-2 border-bottom border-subtle">
+                            <i class="bi bi-tag me-2 text-emerald"></i> Select Subscription Plan
+                        </h5>
+                        <div class="row g-3 mb-4">
+                            @foreach (var plan in plans)
+                            {
+                                var isChecked = Model.PlanCode == plan.Code || (string.IsNullOrEmpty(Model.PlanCode) && plan.Code == "TRIAL");
+                                <div class="col-md-6">
+                                    <label class="card h-100 p-3 bg-surface border border-subtle rounded-3 cursor-pointer position-relative plan-card @(isChecked ? "border-emerald" : "")">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <span class="fw-bold text-light">@plan.Name</span>
+                                            <input type="radio" asp-for="PlanCode" value="@plan.Code" class="form-check-input" checked="@isChecked" />
+                                        </div>
+                                        <div class="fs-4 fw-bold text-emerald mb-1">
+                                            @if (plan.MonthlyPrice == 0)
+                                            {
+                                                <span>Free (14-Day Trial)</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@plan.Currency @plan.MonthlyPrice.ToString("N0") <span class="fs-6 text-muted fw-normal">/mo</span></span>
+                                            }
+                                        </div>
+                                        <p class="text-muted small mb-2">@plan.Description</p>
+                                        <div class="small text-secondary">
+                                            <span><i class="bi bi-check2 text-emerald me-1"></i> Up to @plan.MaxBranches Branches</span><br />
+                                            <span><i class="bi bi-check2 text-emerald me-1"></i> Up to @plan.MaxCounters Counters</span><br />
+                                            <span><i class="bi bi-check2 text-emerald me-1"></i> Up to @plan.MaxUsers Staff Users</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+
+                        <button type="submit" class="btn btn-emerald btn-lg w-100 fw-semibold rounded-3 py-3 mb-3">
+                            <i class="bi bi-rocket-takeoff me-2"></i> Create Company & Launch Workspace
+                        </button>
+
+                        <div class="text-center pt-2 text-muted small">
+                            Already registered? <a asp-action="Login" class="text-emerald fw-semibold text-decoration-none">Sign In Here</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

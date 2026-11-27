@@ -1,0 +1,77 @@
+@model SmartPOS.Web.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In to Your Workspace";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-card">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle bg-emerald-subtle mb-3 text-emerald">
+                            <i class="bi bi-shield-lock-fill fs-2"></i>
+                        </div>
+                        <h2 class="fw-bold mb-1">Welcome Back</h2>
+                        <p class="text-muted small">Sign in to access your SMARTPOS Enterprise workspace</p>
+                    </div>
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger border-0 rounded-3 small py-2 mb-4">
+                            <div asp-validation-summary="All" class="text-danger mb-0"></div>
+                        </div>
+                    }
+
+                    <form asp-action="Login" method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label small fw-semibold text-secondary"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-surface border-subtle text-muted"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Email" class="form-control form-control-lg bg-surface border-subtle text-light" placeholder="name@company.com" autofocus />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label asp-for="Password" class="form-label small fw-semibold text-secondary mb-0"></label>
+                                <a href="#" class="small text-emerald text-decoration-none" onclick="alert('Please contact your company administrator or platform support to reset your password.'); return false;">Forgot?</a>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-surface border-subtle text-muted"><i class="bi bi-key"></i></span>
+                                <input asp-for="Password" class="form-control form-control-lg bg-surface border-subtle text-light" placeholder="••••••••" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label small text-muted"></label>
+                        </div>
+
+                        <button type="submit" class="btn btn-emerald btn-lg w-100 fw-semibold rounded-3 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Sign In to Account
+                        </button>
+
+                        <div class="text-center pt-2 border-top border-subtle">
+                            <span class="text-muted small">Need a company workspace?</span>
+                            <a asp-action="Register" class="text-emerald small fw-semibold text-decoration-none ms-1">Register Company</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 rounded-3 bg-surface border border-subtle text-center text-muted small">
+                <div class="d-flex justify-content-center gap-4">
+                    <span><i class="bi bi-shield-check text-emerald me-1"></i> Multi-Tenant Isolated</span>
+                    <span><i class="bi bi-lock text-emerald me-1"></i> SSL/TLS Encrypted</span>
+                    <span><i class="bi bi-cpu text-emerald me-1"></i> .NET 10 High Speed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

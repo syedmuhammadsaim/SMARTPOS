@@ -11,6 +11,7 @@ using SmartPOS.Domain.Entities.Organization;
 using SmartPOS.Domain.Entities.Pricing;
 using SmartPOS.Domain.Entities.PromotionsAndLoyalty;
 using SmartPOS.Domain.Entities.Purchasing;
+using SmartPOS.Domain.Entities.SaaS;
 using SmartPOS.Domain.Entities.Sales;
 using SmartPOS.Domain.Entities.ShiftsAndSessions;
 using SmartPOS.Domain.Entities.System;
@@ -135,6 +136,16 @@ public class SmartPOSDbContext : IdentityDbContext<ApplicationUser, ApplicationR
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<LicenseKey> LicenseKeys => Set<LicenseKey>();
 
+    // SaaS Multi-Tenant Platform
+    public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
+    public DbSet<SubscriptionPayment> SubscriptionPayments => Set<SubscriptionPayment>();
+    public DbSet<SubscriptionInvoice> SubscriptionInvoices => Set<SubscriptionInvoice>();
+    public DbSet<PlatformSetting> PlatformSettings => Set<PlatformSetting>();
+    public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
+    public DbSet<SupportTicketMessage> SupportTicketMessages => Set<SupportTicketMessage>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<OfflineSyncRecord> OfflineSyncRecords => Set<OfflineSyncRecord>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -220,29 +231,13 @@ public class SmartPOSDbContext : IdentityDbContext<ApplicationUser, ApplicationR
             .HasIndex(s => new { s.ProductId, s.VariantId, s.WarehouseId, s.BatchId });
 
         // Prevent multiple cascade paths on SQL Server
-        builder.Entity<ProductBundleItem>()
-            .HasOne(b => b.ComponentProduct)
-            .WithMany()
-            .HasForeignKey(b => b.ComponentProductId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<ProductBundleItem>()
-            .HasOne(b => b.BundleProduct)
-            .WithMany()
-            .HasForeignKey(b => b.BundleProductId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<StockTransfer>()
-            .HasOne(m => m.ToWarehouse)
-            .WithMany()
-            .HasForeignKey(m => m.ToWarehouseId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<StockTransfer>()
-            .HasOne(m => m.FromWarehouse)
-            .WithMany()
-            .HasForeignKey(m => m.FromWarehouseId)
-            .OnDelete(DeleteBehavior.Restrict);
+        foreach (var foreignKey in builder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+        {
+            if (!foreignKey.DeclaringEntityType.ClrType.Namespace?.StartsWith("Microsoft.AspNetCore.Identity") ?? true)
+            {
+                foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+            }
+        }
     }
 
     private void ConfigureTenantFilter<TEntity>(ModelBuilder builder) where TEntity : class, ITenantScoped

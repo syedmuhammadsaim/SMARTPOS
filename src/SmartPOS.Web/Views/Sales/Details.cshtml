@@ -1,0 +1,112 @@
+@model SmartPOS.Domain.Entities.Sales.POSOrder
+@{
+    ViewData["Title"] = $"Invoice {Model.InvoiceNo}";
+    Layout = "_Layout";
+    var business = ViewBag.Business as SmartPOS.Domain.Entities.Organization.Business;
+    var currency = business?.CurrencyCode ?? "PKR";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a asp-action="Index" class="text-muted small text-decoration-none"><i class="bi bi-arrow-left"></i> Sales History</a>
+                <span class="text-muted small">/ Invoice</span>
+            </div>
+            <h2 class="fw-bold text-white mb-0">Invoice @Model.InvoiceNo</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="POS" asp-action="Receipt" asp-route-orderId="@Model.Id" target="_blank" class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold">
+                <i class="bi bi-printer me-1"></i> Print Thermal Receipt
+            </a>
+            @if (Model.Status == SmartPOS.Domain.Enums.OrderStatus.Completed)
+            {
+                <form asp-action="ProcessReturn" method="post" class="d-inline" onsubmit="return confirm('Process refund and return items to stock?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    <input type="hidden" name="reason" value="Customer Return" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm px-3 rounded-3">
+                        <i class="bi bi-arrow-return-left me-1"></i> Refund & Return
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+            <div>@TempData["SuccessMessage"]</div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Main Invoice Items Table -->
+        <div class="col-lg-8">
+            <div class="card bg-card border-subtle rounded-4 p-4 mb-4">
+                <h5 class="fw-bold text-light mb-3 pb-2 border-bottom border-subtle">
+                    <i class="bi bi-bag-check me-2 text-emerald"></i> Purchased Line Items
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Discount</th>
+                                <th class="text-end">Line Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-light">@(item.Product?.Name ?? "Item")</div>
+                                        <div class="text-muted small mono">SKU: @(item.Product?.Sku ?? "-")</div>
+                                    </td>
+                                    <td class="text-center fw-bold mono text-light">@item.Qty.ToString("G29")</td>
+                                    <td class="text-end text-muted small">@currency @item.PriceSnapshot.ToString("N2")</td>
+                                    <td class="text-end text-muted small">@currency @item.DiscountAmount.ToString("N2")</td>
+                                    <td class="text-end fw-bold text-emerald mono">@currency @item.LineTotal.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Summary -->
+        <div class="col-lg-4">
+            <div class="card bg-card border-subtle rounded-4 p-4 mb-4">
+                <h5 class="fw-bold text-light mb-3 pb-2 border-bottom border-subtle">Order Summary</h5>
+                <div class="d-flex justify-content-between small text-secondary mb-2">
+                    <span>Subtotal</span>
+                    <span>@currency @Model.Subtotal.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between small text-secondary mb-2">
+                    <span>Discount</span>
+                    <span class="text-emerald">- @currency @Model.DiscountTotal.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between small text-secondary mb-3">
+                    <span>Tax</span>
+                    <span>@currency @Model.TaxTotal.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-subtle mb-3">
+                    <span class="fw-bold text-light fs-5">Total Paid</span>
+                    <span class="fs-4 fw-bold text-emerald mono">@currency @Model.Total.ToString("N2")</span>
+                </div>
+                <div class="small text-muted border-top border-subtle pt-3">
+                    <div><strong>Customer:</strong> @(Model.Customer?.Name ?? "Walk-in")</div>
+                    <div><strong>Branch:</strong> @(Model.Branch?.Name ?? "Main Branch")</div>
+                    <div><strong>Counter:</strong> @(Model.Counter?.Name ?? "Counter 01")</div>
+                    <div><strong>Date:</strong> @Model.CreatedAtUtc.ToString("dd-MMM-yyyy HH:mm")</div>
+                    <div><strong>Status:</strong> <span class="badge bg-emerald-subtle text-emerald">@Model.Status</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

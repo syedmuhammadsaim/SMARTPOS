@@ -1,0 +1,86 @@
+@model SmartPOS.Application.Features.POS.DTOs.CounterSessionReportDto
+@{
+    ViewData["Title"] = $"Shift Report - {Model.ReportType}";
+    Layout = "_Layout";
+    var business = ViewBag.Business as SmartPOS.Domain.Entities.Organization.Business;
+    var session = ViewBag.Session as SmartPOS.Domain.Entities.ShiftsAndSessions.CounterSession;
+    var currency = business?.CurrencyCode ?? "PKR";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a asp-action="Index" class="btn btn-outline-light border-subtle btn-sm px-3 rounded-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Shifts
+                </a>
+                <button class="btn btn-emerald btn-sm px-3 rounded-3 fw-semibold" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print Slip
+                </button>
+            </div>
+
+            <div class="card bg-card border-subtle rounded-4 p-4 p-md-5 shadow">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-white mb-0">@(business?.Name ?? "SMARTPOS ENTERPRISE")</h3>
+                    <div class="text-muted small">@(session?.Branch?.Name ?? "Main Branch") • @(session?.Counter?.Name ?? "Counter 01")</div>
+                    <div class="badge bg-emerald-subtle text-emerald border border-emerald fs-6 mt-2">
+                        @Model.ReportType FINAL REPORT
+                    </div>
+                    <div class="text-muted small mt-1">Generated: @Model.GeneratedAtUtc.ToString("dd-MMM-yyyy HH:mm:ss")</div>
+                </div>
+
+                <div class="p-3 rounded bg-surface border border-subtle mb-4">
+                    <div class="d-flex justify-content-between small text-secondary mb-2">
+                        <span>Opening Cash Float</span>
+                        <span class="mono">@currency @Model.OpeningCash.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-secondary mb-2">
+                        <span>Cash Sales</span>
+                        <span class="mono text-emerald">+ @currency @Model.CashSales.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-secondary mb-2">
+                        <span>Cash Refunds</span>
+                        <span class="mono text-danger">- @currency @Model.CashRefunds.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-secondary mb-2">
+                        <span>Cash Expenses Out</span>
+                        <span class="mono text-danger">- @currency @Model.CashExpenses.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top border-subtle mb-2">
+                        <span class="fw-bold text-light">Expected Cash in Till</span>
+                        <span class="fw-bold text-light fs-5 mono">@currency @Model.ExpectedCash.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold text-secondary">Actual Counted Cash</span>
+                        <span class="fw-bold text-light fs-5 mono">@currency @Model.ActualCash.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top border-subtle">
+                        <span class="fw-bold text-light">Cash Difference / Variance</span>
+                        <span class="fw-bold fs-5 mono @(Model.Variance == 0 ? "text-emerald" : (Model.Variance > 0 ? "text-info" : "text-danger"))">
+                            @currency @Model.Variance.ToString("+#,##0.00;-#,##0.00;0.00")
+                        </span>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-light mb-2">Sales Summary</h6>
+                <div class="d-flex justify-content-between small text-secondary mb-1">
+                    <span>Invoices Issued</span>
+                    <span class="fw-bold text-light">@Model.TotalInvoices</span>
+                </div>
+                <div class="d-flex justify-content-between small text-secondary mb-3">
+                    <span>Total Sales Revenue</span>
+                    <span class="fw-bold text-emerald mono">@currency @Model.TotalRevenue.ToString("N2")</span>
+                </div>
+
+                <h6 class="fw-bold text-light mb-2">Tender Breakdown</h6>
+                @foreach (var pm in Model.PaymentMethodBreakdown)
+                {
+                    <div class="d-flex justify-content-between small text-secondary mb-1">
+                        <span>@pm.Key</span>
+                        <span class="mono">@currency @pm.Value.ToString("N2")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

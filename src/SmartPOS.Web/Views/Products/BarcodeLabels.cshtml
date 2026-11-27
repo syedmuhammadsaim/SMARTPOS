@@ -1,0 +1,117 @@
+@model SmartPOS.Domain.Entities.Catalog.Product
+@{
+    Layout = null;
+    var business = ViewBag.Business as SmartPOS.Domain.Entities.Organization.Business;
+    var currency = business?.CurrencyCode ?? "PKR";
+    var count = (int)ViewBag.Count;
+    var barcode = Model.Barcodes.FirstOrDefault(b => b.IsPrimary)?.Barcode ?? Model.Barcodes.FirstOrDefault()?.Barcode ?? Model.Sku;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barcode Labels - @Model.Sku</title>
+    <!-- JsBarcode library for standard Code128 barcode rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: #f8fafc;
+        }
+
+        .labels-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .label-card {
+            width: 48mm;
+            height: 28mm;
+            border: 1px dashed #999;
+            padding: 4px;
+            text-align: center;
+            background: #fff;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .store-name {
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-name {
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .price-tag {
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .no-print {
+            text-align: center;
+            padding: 15px;
+            background: #fff;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-print {
+            background-color: #10B981;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        @@media print {
+            .no-print { display: none !important; }
+            body { background: transparent; padding: 0; margin: 0; }
+            .label-card { border: none; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="btn-print" onclick="window.print()">Print @count Labels [Ctrl+P]</button>
+    </div>
+
+    <div class="labels-grid">
+        @for (int i = 0; i < count; i++)
+        {
+            <div class="label-card">
+                <div class="store-name">@(business?.Name ?? "SMARTPOS")</div>
+                <div class="product-name">@Model.Name</div>
+                <div>
+                    <svg class="barcode-svg" jsbarcode-value="@barcode" jsbarcode-height="25" jsbarcode-width="1.3" jsbarcode-fontsize="9" jsbarcode-margin="0"></svg>
+                </div>
+                <div class="price-tag">@currency @Model.SalePrice.ToString("N0")</div>
+            </div>
+        }
+    </div>
+
+    <script>
+        JsBarcode(".barcode-svg").init();
+    </script>
+</body>
+</html>
